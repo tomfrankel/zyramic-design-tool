@@ -194,7 +194,7 @@ export function sizeSwing(input: SwingInput) {
       rawRequiredAreaM2: rawArea,
       requiredAreaM2
     },
-    matches: matches.map(serializeMatch),
+    matches: (prefer === "auto" && series8.length ? series8 : matches).map(serializeMatch),
     series9Matches: series9.map(serializeMatch),
     selected: selected ? serializeMatch(selected) : null,
     recommended: recommended ? serializeMatch(recommended) : null,

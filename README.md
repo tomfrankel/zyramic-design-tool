@@ -119,4 +119,8 @@ No secrets, pricing tables, customer lists, OEM price sheets, or a real `.env`. 
 
 ## Temporary public URL
 
-A static SPA build can be published for demo (sizing engines run in the browser; commercial data stays local to that browser). The Node server is the supported long-term shape for `/proposal` on zyramic.com.
+**Demo (static SPA, expires ~24h unless claimed):** https://brisk-zinnia-afg3.here.now/
+
+Claim to keep it: https://here.now/c/FhVqxeTJ39TAD55E
+
+Sizing engines run in the browser on that URL. Commercial data stays in that browser. The Node server (`npm start`) is the supported long-term shape for zyramic.com/proposal.
