@@ -13,6 +13,15 @@ export interface SwingModuleSpec {
   municipalCapacityM3d: number;
 }
 
+/** Engineering SKU as used in Alper's quote (EPS8-*). Public alias is SWG-*. */
+export function engSku(spec: Pick<SwingModuleSpec, "series" | "decks" | "columns">): string {
+  return `EPS${spec.series}-${spec.decks}-${spec.columns}`;
+}
+
+export function publicSku(spec: Pick<SwingModuleSpec, "series" | "decks" | "columns">): string {
+  return `SWG-${spec.series}-${spec.decks}-${spec.columns}`;
+}
+
 /** Public Swing SKUs. Geometry and scour values come from the Swing design-tool Database sheet. */
 export const SWING_MODULES: SwingModuleSpec[] = [
   { sku: "SWG-8-0.5-1", series: "8", decks: 0.5, columns: 1, areaM2: 6.25, lengthMm: 500, widthMm: 700, heightMm: 900, filtrateDn: "DN15", airDn: "DN25", scourAirM3h: 10, municipalCapacityM3d: 2.1875 },
@@ -47,6 +56,8 @@ export const SWING_MODULES: SwingModuleSpec[] = [
   { sku: "SWG-8-2.5-8", series: "8", decks: 2.5, columns: 8, areaM2: 250, lengthMm: 2300, widthMm: 700, heightMm: 2160, filtrateDn: "DN50", airDn: "DN50", scourAirM3h: 104, municipalCapacityM3d: 87.5 },
   { sku: "SWG-8-2.5-9", series: "8", decks: 2.5, columns: 9, areaM2: 281.3, lengthMm: 2550, widthMm: 700, heightMm: 2160, filtrateDn: "DN50", airDn: "DN50", scourAirM3h: 117, municipalCapacityM3d: 98.455 },
   { sku: "SWG-8-2.5-10", series: "8", decks: 2.5, columns: 10, areaM2: 312.5, lengthMm: 2800, widthMm: 700, heightMm: 2160, filtrateDn: "DN50", airDn: "DN65", scourAirM3h: 130, municipalCapacityM3d: 109.375 },
+  { sku: "SWG-8-2.5-11", series: "8", decks: 2.5, columns: 11, areaM2: 343.75, lengthMm: 3050, widthMm: 700, heightMm: 2160, filtrateDn: "DN50", airDn: "DN65", scourAirM3h: 143, municipalCapacityM3d: 120.3125 },
+  { sku: "SWG-8-2.5-12", series: "8", decks: 2.5, columns: 12, areaM2: 375, lengthMm: 3300, widthMm: 700, heightMm: 2160, filtrateDn: "DN50", airDn: "DN65", scourAirM3h: 156, municipalCapacityM3d: 131.25 },
   { sku: "SWG-8-3-4", series: "8", decks: 3, columns: 4, areaM2: 150, lengthMm: 1250, widthMm: 700, heightMm: 2430, filtrateDn: "DN40", airDn: "DN50", scourAirM3h: 60, municipalCapacityM3d: 52.5 },
   { sku: "SWG-8-3-5", series: "8", decks: 3, columns: 5, areaM2: 187.5, lengthMm: 1500, widthMm: 700, heightMm: 2430, filtrateDn: "DN50", airDn: "DN50", scourAirM3h: 75, municipalCapacityM3d: 65.625 },
   { sku: "SWG-8-3-6", series: "8", decks: 3, columns: 6, areaM2: 225, lengthMm: 1750, widthMm: 700, heightMm: 2430, filtrateDn: "DN50", airDn: "DN50", scourAirM3h: 87, municipalCapacityM3d: 78.75 },
@@ -98,7 +109,7 @@ export const SWING_INDUSTRY_FLUX_M3_M2_D: Record<string, number> = {
 };
 
 export const SWING_TANK_LENGTHS_MM = [
-  2200, 2750, 3300, 3850, 4400, 4950, 5500, 6050, 6600, 7150, 7700, 8250, 8800, 9900, 11000
+  2200, 2750, 3300, 3850, 4400, 4950, 5500, 6050, 6600, 7150, 7700, 8250, 8800, 9900, 11000, 12760
 ];
-export const SWING_TANK_WIDTHS_MM = [1650, 2200, 2750, 3300, 3850, 4400];
+export const SWING_TANK_WIDTHS_MM = [1650, 2200, 2400, 2750, 3300, 3850, 4400];
 export const SWING_MODULE_PITCH_MM = 1100;

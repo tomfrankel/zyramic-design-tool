@@ -52,7 +52,9 @@ export const PALISADE_BASIS = {
   },
   plateGeometryMm: { height: 1047, width: 502, thickness: 7.6, channelGap: 6.4 },
   scourZoneHeightMm: 400,
-  connections: "2.5 in Sch 40 / DN65"
+  connections: "2.5 in Sch 40 / DN65",
+  pal260EnvelopeHeightM: 3.05,
+  prefer130AtOrBelowM: 3.0
 } as const;
 
 export function waterViscosityCp(temperatureC: number): number {
@@ -94,7 +96,12 @@ export function sizePalisade(input: PalisadeInput) {
   const qpM3d = designPermeateM3d(input);
   if (qpM3d == null) missing.push("targetPermeateM3d or designFeedM3d + recoveryPct");
   if (input.minTemperatureC == null) missing.push("minTemperatureC");
-  if (!input.selectedModulePlates) missing.push("selectedModulePlates");
+
+  const tankHeightM = input.tankHeightM ?? null;
+  const pal260Blocked =
+    tankHeightM != null && tankHeightM < PALISADE_BASIS.pal260EnvelopeHeightM;
+  const prefer130 =
+    tankHeightM != null && tankHeightM <= PALISADE_BASIS.prefer130AtOrBelowM;
 
   const onFlux = input.onPeriodFluxLmh ?? PALISADE_BASIS.selectedOnFluxLmh;
   const onMin = input.cycleOnMin ?? PALISADE_BASIS.cycleOnMin;
@@ -148,7 +155,11 @@ export function sizePalisade(input: PalisadeInput) {
     };
   });
 
-  const selected = options.find((o) => o.plates === input.selectedModulePlates) ?? null;
+  const autoPlates: 130 | 260 = pal260Blocked || prefer130 || !input.selectedModulePlates ? 130 : input.selectedModulePlates;
+  const requestedPlates = input.selectedModulePlates;
+  const effectivePlates: 130 | 260 =
+    requestedPlates === 260 && pal260Blocked ? 130 : requestedPlates ?? autoPlates;
+  const selected = options.find((o) => o.plates === effectivePlates) ?? null;
   const totalScourScfm = selected?.totalScourScfm ?? null;
   const totalScourLmin = totalScourScfm != null ? totalScourScfm * 28.3168466 : null;
   const totalScourSm3h = totalScourLmin != null ? (totalScourLmin * 60) / 1000 : null;
@@ -218,7 +229,7 @@ export function sizePalisade(input: PalisadeInput) {
       "15 LMH is the instantaneous ON-period flux, not clock-time average. Cycle-average equivalent flux = ON flux × ON fraction. Confirm whether the 12.5–21 LMH range is instantaneous or cycle-average before field use."
   });
 
-  if (input.selectedModulePlates === 130) {
+  if (effectivePlates === 130) {
     warnings.push({
       code: "NO_HALVED_ENVELOPE",
       severity: "info",
@@ -227,11 +238,33 @@ export function sizePalisade(input: PalisadeInput) {
     });
   }
 
+  if (pal260Blocked) {
+    warnings.push({
+      code: "PAL260_HEIGHT_BLOCK",
+      severity: "block",
+      message: `PAL-260 is blocked: published 260-module envelope height is 3.05 m and the entered tank height is ${tankHeightM} m. Alper rejected 260-plate for a 3.00 m tank. Using PAL-130.`
+    });
+  } else if (prefer130) {
+    warnings.push({
+      code: "PREFER_130",
+      severity: "warning",
+      message: "Tank height ≤ 3.00 m — prefer PAL-130. PAL-260 envelope is 2.12 × 0.96 × 3.05 m."
+    });
+  }
+
+  if (input.minTemperatureC != null && input.minTemperatureC < tRef) {
+    warnings.push({
+      code: "TCF_CHECK_ONLY",
+      severity: "info",
+      message:
+        "Cold-temperature TCF is CHECK ONLY. Module count uses Area@12 (cycle-average). TCF does not upsize selection."
+    });
+  }
+
   const modelStatus =
     qpM3d == null ||
     onFlux == null ||
     requiredAreaM2 == null ||
-    !input.selectedModulePlates ||
     selected?.moduleCount == null ||
     input.minTemperatureC == null
       ? "INPUTS / MODULE SELECTION MISSING"
@@ -245,7 +278,7 @@ export function sizePalisade(input: PalisadeInput) {
     { id: "on_frac", label: "ON-time fraction", value: onFraction, unit: "fraction", status: "CALCULATED" },
     { id: "cycle_flux", label: "Cycle-average equivalent flux", value: cycleAvgFlux, unit: "LMH", status: "CALCULATED", note: "Used for membrane-area sizing." },
     { id: "area", label: "Required membrane area", value: requiredAreaM2, unit: "m²", status: "CALCULATED" },
-    { id: "cold_area", label: "Cold-temperature area check", value: coldAreaM2, unit: "m²", status: "CALCULATED", note: "Viscosity multiplier applied only if minimum temperature < 20°C." },
+    { id: "cold_area", label: "Cold-temperature area check", value: coldAreaM2, unit: "m²", status: "CALCULATED", note: "CHECK ONLY — does not change module count. Selection uses Area@12." },
     { id: "sku", label: "Selected SKU", value: selected?.sku ?? null, status: "ENGINEER INPUT" },
     { id: "modules", label: "Module count", value: selected?.moduleCount ?? null, unit: "modules", status: "CALCULATED" },
     { id: "installed", label: "Installed membrane area", value: selected?.installedAreaM2 ?? null, unit: "m²", status: "CALCULATED" },
@@ -299,8 +332,13 @@ export function sizePalisade(input: PalisadeInput) {
       viscosityMinCp: muT,
       temperatureCorrectionFactor: tcf,
       coldTemperatureAreaM2: coldAreaM2,
+      coldCheckOnly: true,
       areaAtLowFluxM2: areaLow,
-      areaAtHighFluxM2: areaHigh
+      areaAtHighFluxM2: areaHigh,
+      tankHeightM,
+      pal260Blocked,
+      prefer130,
+      effectivePlates
     },
     moduleOptions: options,
     selectedModule: selected,
@@ -359,3 +397,41 @@ export function sizePalisade(input: PalisadeInput) {
 }
 
 export type PalisadeResult = ReturnType<typeof sizePalisade>;
+
+export const ARGES_FLOWS_M3D = [100, 150, 200, 500, 600];
+export const ARGES_TRAINS = [
+  { flowM3d: 100, units: 3 },
+  { flowM3d: 150, units: 5 },
+  { flowM3d: 200, units: 1 },
+  { flowM3d: 500, units: 1 },
+  { flowM3d: 600, units: 1 }
+];
+
+export function palisadeCapacityTable(
+  base: PalisadeInput,
+  trains = ARGES_TRAINS
+) {
+  return trains.map((train) => {
+    const unit = sizePalisade({
+      ...base,
+      targetPermeateM3d: train.flowM3d,
+      selectedModulePlates: base.selectedModulePlates ?? null
+    });
+    const modulesEach = unit.selectedModule?.moduleCount ?? 0;
+    const areaEach = unit.selectedModule?.installedAreaM2 ?? 0;
+    return {
+      flowM3d: train.flowM3d,
+      units: train.units,
+      requiredAreaM2: unit.sizing.requiredAreaM2,
+      coldCheckAreaM2: unit.sizing.coldTemperatureAreaM2,
+      sku: unit.selectedModule?.sku ?? null,
+      plates: unit.selectedModule?.plates ?? null,
+      modulesEach,
+      areaEachM2: areaEach,
+      modulesProject: modulesEach * train.units,
+      areaProjectM2: areaEach * train.units,
+      scourEachScfm: unit.scour.totalScourScfm,
+      modelStatus: unit.modelStatus
+    };
+  });
+}

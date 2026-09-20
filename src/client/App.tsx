@@ -17,7 +17,7 @@ function Shell({ children }: { children: ReactNode }) {
     <div className="app-shell">
       <header className="topbar">
         <div className="brand">
-          <img src="/brand/zyramic-logo.png" alt="Zyramic" />
+          <img src="/brand/logo-header.png" alt="Zyramic" />
           <div>
             <h1>Proposal Software</h1>
             <p>Draft workspace · Palisade + Swing MBR modules</p>

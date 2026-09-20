@@ -68,21 +68,22 @@ export async function cipApi(input: CipInput) {
   return screenPalisadeCip(input);
 }
 
-export async function priceApi(product: "palisade" | "swing", input: unknown) {
+export async function priceApi(product: "palisade" | "swing", input: unknown, sellMarginPct?: number | null) {
   const role = getRole();
   if (!role || !canSeePricing(role)) {
     const err = new Error("Commercial zone is walled to sales, engineering, and admin.");
     throw err;
   }
-  const res = await tryFetch("/api/commercial/price", json({ product, input }));
+  const res = await tryFetch("/api/commercial/price", json({ product, input, sellMarginPct }));
   if (res) {
     if (res.status === 403) throw new Error("Commercial zone is walled to sales, engineering, and admin.");
     if (res.ok) return res.json();
   }
+  const flags = { sellMarginPct: sellMarginPct ?? null };
   if (product === "palisade") {
-    return { lineItems: palisadeLineItems(sizePalisade(input as PalisadeInput)), terms: unknownCommercialTerms() };
+    return { lineItems: palisadeLineItems(sizePalisade(input as PalisadeInput), flags), terms: unknownCommercialTerms() };
   }
-  return { lineItems: swingLineItems(sizeSwing(input as SwingInput)), terms: unknownCommercialTerms() };
+  return { lineItems: swingLineItems(sizeSwing(input as SwingInput), flags), terms: unknownCommercialTerms() };
 }
 
 function readLocal<T>(key: string, fallback: T): T {
@@ -178,14 +179,26 @@ export async function downloadPdf(args: ProposalPdfInput) {
   URL.revokeObjectURL(url);
 }
 
-export async function loadLogo(): Promise<Uint8Array | null> {
+async function loadBytes(url: string): Promise<Uint8Array | null> {
   try {
-    const res = await fetch("/brand/zyramic-logo.png");
+    const res = await fetch(url);
     if (!res.ok) return null;
     return new Uint8Array(await res.arrayBuffer());
   } catch {
     return null;
   }
+}
+
+export async function loadLogo(): Promise<Uint8Array | null> {
+  return (await loadBytes("/brand/logo-pdf.png")) || (await loadBytes("/brand/logo-header.png")) || loadBytes("/brand/zyramic-logo.png");
+}
+
+export async function loadCutsheet(product: "palisade" | "swing"): Promise<Uint8Array | null> {
+  return loadBytes(product === "swing" ? "/catalog/swing-cutsheet.pdf" : "/catalog/palisade-cutsheet.pdf");
+}
+
+export async function loadShippingFigure(): Promise<Uint8Array | null> {
+  return loadBytes("/catalog/swing-shipping-height.png");
 }
 
 function json(body: unknown): RequestInit {

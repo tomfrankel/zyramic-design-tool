@@ -1,23 +1,25 @@
 # Zyramic Proposal Software
 
-Draft workspace for **Palisade** and **Swing MBR** module selection, preliminary sizing, logo’d proposal PDFs, and a walled commercial zone.
+Draft workspace for **Palisade** and **Swing MBR** module selection, preliminary sizing, a branded 5-page proposal PDF, and a walled commercial zone.
 
 This is **not** the older “design tool” name. In the UI and in this README the product is **Proposal Software**.
 
-**Status:** demonstrable draft for engineering/sales review. Marked PRELIMINARY / validation-gated. Not a final customer or field issue.
+**Status:** demonstrable draft. Marked PRELIMINARY / validation-gated. Not a final customer or field issue.
+
+**Acceptance baseline:** Alper Özkan’s Sep 18 Arges / Ahmet Iraq MBR quote. See `CHANGELOG.md`.
+
+Public copy names **Palisade** and **Swing MBR** only (modules, not systems). No OmniScour / EPSMEM / Liren / Thermo Fisher on public surfaces. Engineering view may show Alper `EPS8-*` SKUs; public alias is `SWG-*`.
 
 ## What this draft does
 
-- Sizes **Palisade** from Alper’s V29 engineering basis (INPUT, SIZING, MODULE SELECTION, SCOUR AIR, CIP boundary, ENGINEERING SUMMARY, ASSUMPTIONS).
-- Selects **Swing MBR** modules from the Swing design-tool Database + Design Tool fit rules.
-- Public product names only: **Palisade**, **Swing MBR**. Modules, not complete systems. Scour, not aeration / diffuser / bubble copy.
+- Sizes **Palisade** from the V29 / Alper Area@12 basis (15 LMH ON × 8/2 → 12 LMH cycle-average).
+- Selects **Swing MBR** with **Alper 12 LMH + 2-wide pack** as the municipal default; industry 0.34 m³/m²/d remains a labeled alternate.
 - Two zones:
-  1. **Sizing** (customer-eligible): selection and sizing. No prices, customer lists, or past quotes.
-  2. **Commercial** (sales / engineering / admin): pricing line items, customer list, past quotes, Dropbox + HubSpot stubs.
-- Roles enforced in the UI and on the API: `customer | sales | engineering | admin`.
-- Separate APIs: `/api/sizing/*` and `/api/commercial/*`.
-- Proposal PDF always includes sizing. Pricing pages are included only when the role allows.
-- Unknown commercial flags: labor TBD, Palisade fab TBD, US Swing fab TBD. Optional Chinese OEM estimate is an env stub only. No invented warranty or lead time.
+  1. **Sizing** (customer-eligible): selection and sizing. No prices, cost, margin, customer lists, or past quotes.
+  2. **Commercial** (sales / engineering / admin): line items, **sell margin %**, customer list, past quotes, Dropbox + HubSpot stubs.
+- Roles: `customer | sales | engineering | admin`.
+- 5-page branded PDF: cover, technical, drawings (catalog cut sheets), price or sizing-only, draft T&Cs.
+- Unknown commercial flags stay visible. Palisade $ is UNKNOWN. Swing $30/m² is a STUB/OEM budgetary flag (Alper Attachment-3). No invented warranty or lead time.
 
 Ceramics are out of scope.
 
@@ -32,15 +34,6 @@ npm start
 
 Open http://localhost:8787
 
-For a live UI rebuild during development:
-
-```bash
-npm run build
-npm run dev
-```
-
-`npm run dev` starts the Express API (and serves `dist/` if you have already built). After changing the React UI, run `npm run build` again or use a second Vite process if you prefer.
-
 ### Demo sign-in
 
 Use the role name as the demo key:
@@ -52,11 +45,61 @@ Use the role name as the demo key:
 | engineering | `engineering` | yes | yes |
 | admin | `admin` | yes | yes |
 
-Copy `.env.example` to `.env` if you want to change keys or enable adapter stubs. **Never commit `.env` or real tokens.**
+Copy `.env.example` to `.env` if you want to change keys or adapter stubs. **Never commit `.env` or real tokens.**
+
+## How to test the Arges / Alper cases
+
+1. Sign in as **engineering** / `engineering`.
+2. **Palisade** — page loads the Iraq baseline (200 m³/d, 15°C, tank H 3.00 m). Confirm:
+   - Area@12 = 694.44 m² → **6 × PAL-130 = 819 m²**
+   - TCF is shown as check-only; module count stays 6
+   - Selecting PAL-260 is blocked and falls back to 130
+   - Capacity tab: 100/150/200/500/600 → 3/4/6/13/16 × PAL-130
+3. **Swing MBR** — page loads Alper 12 LMH + 2-wide, tank 12760 × 2400 × 3000 mm. Confirm:
+   - 200 m³/d → **2 × SWG-8-2.5-12 / EPS8-2.5-12 = 750 m²**
+   - 500 m³/d → **6 × SWG-8-2.5-10 / EPS8-2.5-10 = 1875 m²**
+4. Enter a **sell margin %** (required; no default). Download the 5-page commercial PDF. Price page shows stub + sell overlay.
+5. Sign out, sign in as **customer** / `customer`. Same sizing. Commercial nav is hidden. PDF has no $ / cost / margin.
+
+## Engineering basis (Palisade)
+
+- Selected ON-period flux = **15 LMH** (assumption).
+- Cycle = **8 min ON / 2 min RELAX** → ON fraction **0.80** → cycle-average **12 LMH**.
+- Required area = permeate flow / cycle-average flux.
+- Independent audit case (no tank-height block): **1,000 m³/d → 3,472.22 m² → 13 × PAL-260**.
+- Temperature correction uses the EPA MF/UF viscosity polynomial. **CHECK ONLY — does not change module count.**
+- Module rounding only. No +10% area margin and no N+1.
+- **PAL-260** envelope = 2.12 × 0.96 × 3.05 m. Prefer / force PAL-130 when tank H ≤ ~3.00 m / &lt; 3.05 m.
+- Scour = 48 SCFM / PAL-130 and 96 SCFM / PAL-260 (0.35 SCFM/m²).
+- Warranty screens: COD 500, BOD5 300, TSS 150, NH4-N 50, pH 6–9. Exceedance = process-design review, not “MBR impossible.”
+
+## Swing MBR
+
+- **Alper flux mode (default):** 12 LMH cycle-average. Area = Q / 12.
+- **Industry map (alternate):** design-tool menu (municipal 0.34 m³/m²/d ≈ 14.17 LMH) with the original 6.25 / 12.5 clamp and linear fit filter.
+- **Alper 2-wide pack:** 300 + 700 + 400 + 700 + 300 = 2400 mm. Module length along tank length. Prefer 2.5-deck when height allows (~2160 mm in ~3000 mm).
+- Public SKUs `SWG-8-*` / `SWG-9-*`. Engineering SKU `EPS8-*` (Alper naming). Prefer 8-series.
+
+## Commercial rules
+
+- Sales / engineering must enter **sell margin %**. No invented company default.
+- Margin applies only on top of cost stubs. Customer role never receives cost or margin fields.
+- `SWING_OEM_ESTIMATE_USD_PER_M2` defaults to **30** (Alper Attachment-3 stub). Flagged STUB/OEM.
+- Palisade fabrication remains UNKNOWN unless a stub is explicitly supplied.
+- Dropbox stub: `/Zyramic Setup Info/Proposal Software/Orders/{projectId}/`
+- HubSpot adapter is a deal-attachment stub.
+
+## Proposal PDF (five pages)
+
+1. Cover
+2. Technical (sizing / process / warranty / multi-capacity table)
+3. Drawings — embedded catalog cut sheets (not project CAD). Optional Swing shipping-height figure.
+4. Price — line items + sell margin for sales/eng; customer gets sizing-only / no $
+5. Draft modular terms (budgetary / modules only / warranty envelope)
+
+Brand tokens from zyramic.com: `--navy #0B1F33`, `--teal #0E7C7B`, `--copper #C4842A`, `--paper #F4EFE4`, `--cream #FFFBF3`. Chrome is structured so Muse art can replace it later.
 
 ## Routes
-
-Intended later as `zyramic.com/proposal`. This draft already uses:
 
 - `/` sign-in
 - `/select` product picker
@@ -64,63 +107,10 @@ Intended later as `zyramic.com/proposal`. This draft already uses:
 - `/proposal/swing`
 - `/proposal/commercial` (walled)
 
-## Engineering basis (Palisade V29)
-
-Read the Engineering Basis before treating numbers as field-ready. The model is a traceable preliminary framework:
-
-- Selected ON-period flux = **15 LMH** (assumption, not validated plant performance).
-- Cycle = **8 min ON / 2 min RELAX** → ON fraction **0.80** → cycle-average **12 LMH**.
-- Required area = permeate flow / cycle-average flux.
-- Independent audit case: **1,000 m³/d → 3,472.22 m² → 13 × PAL-260 → 3,549 m² → 1,248 SCFM**.
-- Temperature correction uses the EPA MF/UF viscosity polynomial. Cold water may increase the area check. Warm water does **not** raise the 15 LMH design flux.
-- Module rounding only. No +10% area margin and no N+1.
-- **PAL-260** envelope = 2.12 × 0.96 × 3.05 m. Do not invent a 130-plate envelope by halving it.
-- Scour = 48 SCFM / PAL-130 and 96 SCFM / PAL-260 (0.35 SCFM/m²). Orifice exit velocity is geometry, not a blower setpoint. Blower kW is out of scope.
-- Warranty screens apply to biological-process influent (COD 500, BOD5 300, TSS 150, NH4-N 50, pH 6–9). An exceedance is a process-design review, not “MBR impossible.”
-- CIP is validation-gated. Scour during chemical soak = OFF as the preliminary basis. Reverse-pressure backwash is not used. Do not return CIP solution to a common permeate / RO tank.
-
-## Swing MBR
-
-- Industry flux menu from the Swing design tool (m³/m²/d), also shown as LMH.
-- Required-area clamp matches the source tool (6.25 m² minimum; 6.25–12.5 becomes 12.5).
-- Fit filter: module length < tank width − 499 mm; module height < tank height − 499 mm; quantity × 1100 mm < tank length + 1; installed area between required and 1.5 × required.
-- Public SKUs are `SWG-8-*` / `SWG-9-*`. Prefer 8-series; 9-series only for very small tanks.
-
-## Commercial rules
-
-- Priceable line items are generated. Amounts stay **UNKNOWN / TBD** unless an explicit env stub is set.
-- `SWING_OEM_ESTIMATE_USD_PER_M2` in `.env` enables an optional Chinese OEM **screening stub**. It is not a customer quote and not a US fab price.
-- Dropbox adapter stub targets `/Zyramic Setup Info/Proposal Software/Orders/{projectId}/` with `rfq.json`, `selection.json`, and `proposal.pdf`.
-- HubSpot adapter is a deal-attachment stub.
-- Persistence writes RFQ + selection together (local `data/store.json` on the server, or browser storage in the static demo).
-
-## API
-
-Sizing (any signed-in role):
-
-- `POST /api/sizing/palisade`
-- `POST /api/sizing/palisade/cip`
-- `POST /api/sizing/swing`
-- `POST /api/sizing/proposal.pdf`
-
-Commercial (sales / engineering / admin only):
-
-- `GET/POST /api/commercial/customers`
-- `GET /api/commercial/quotes`
-- `POST /api/commercial/price`
-- `POST /api/commercial/persist`
-- `POST /api/commercial/proposal.pdf`
-
-Send `x-zyramic-role` or the `zy_role` cookie.
-
 ## What is intentionally not in git
 
-No secrets, pricing tables, customer lists, OEM price sheets, or a real `.env`. Source Excel/PDF workbooks are not committed. Engineering constants that are already in the V29 basis are encoded in `src/shared/`.
+No secrets, live pricing tables, customer lists, OEM price sheets, or a real `.env`.
 
 ## Temporary public URL
 
-**Demo (static SPA, expires ~24h unless claimed):** https://brisk-zinnia-afg3.here.now/
-
-Claim to keep it: https://here.now/c/FhVqxeTJ39TAD55E
-
-Sizing engines run in the browser on that URL. Commercial data stays in that browser. The Node server (`npm start`) is the supported long-term shape for zyramic.com/proposal.
+See the pull request description for the current here.now demo URL, claim link, and how to walk the Arges cases. The static SPA runs the engines in the browser. The Node server (`npm start`) is the supported long-term shape for zyramic.com/proposal.

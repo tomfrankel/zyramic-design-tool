@@ -5,9 +5,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { screenPalisadeCip } from "../shared/cip.js";
 import { newId } from "../shared/id.js";
-import { palisadeLineItems, swingLineItems, unknownCommercialTerms } from "../shared/lineItems.js";
+import { ALPER_SWING_BUDGETARY_USD_PER_M2, palisadeLineItems, swingLineItems, unknownCommercialTerms } from "../shared/lineItems.js";
 import { sizePalisade } from "../shared/palisade.js";
 import { buildProposalPdf } from "../shared/pdf.js";
+import { palisadeProposal, swingProposal } from "../shared/proposal.js";
 import { canSeePricing, isRole } from "../shared/roles.js";
 import { sizeSwing } from "../shared/swing.js";
 import { persistOrderFolder } from "./adapters/dropbox.js";
@@ -20,20 +21,30 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: "4mb" }));
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const logoPath = path.join(root, "public/brand/zyramic-logo.png");
 
-function logoBytes(): Uint8Array | null {
+function readPublic(rel: string): Uint8Array | null {
   try {
-    return fs.readFileSync(logoPath);
+    return fs.readFileSync(path.join(root, "public", rel));
   } catch {
     return null;
   }
 }
 
-function oemFlag() {
+function logoBytes(): Uint8Array | null {
+  return readPublic("brand/logo-pdf.png") || readPublic("brand/logo-header.png") || readPublic("brand/zyramic-logo.png");
+}
+
+function headerLogoBytes(): Uint8Array | null {
+  return readPublic("brand/logo-header.png") || logoBytes();
+}
+
+function oemFlag(sellMarginPct?: number | null) {
   const raw = process.env.SWING_OEM_ESTIMATE_USD_PER_M2;
-  const n = raw ? Number(raw) : null;
-  return { swingOemUsdPerM2: n != null && Number.isFinite(n) && n > 0 ? n : null };
+  const n = raw ? Number(raw) : ALPER_SWING_BUDGETARY_USD_PER_M2;
+  return {
+    swingOemUsdPerM2: n != null && Number.isFinite(n) && n > 0 ? n : ALPER_SWING_BUDGETARY_USD_PER_M2,
+    sellMarginPct: sellMarginPct ?? null
+  };
 }
 
 app.get("/api/health", (_req, res) => {
@@ -127,12 +138,14 @@ app.get("/api/commercial/quotes/:id", requireRole, requireZone("commercial"), (r
 
 app.post("/api/commercial/price", requireRole, requireZone("commercial"), (req: AuthedRequest, res) => {
   const product = req.body?.product;
+  const flags = oemFlag(req.body?.sellMarginPct);
   if (product === "palisade") {
     const result = sizePalisade(req.body?.input || {});
     res.json({
       zone: "commercial",
-      lineItems: palisadeLineItems(result, oemFlag()),
-      terms: unknownCommercialTerms()
+      lineItems: palisadeLineItems(result, flags),
+      terms: unknownCommercialTerms(),
+      sellMarginPct: flags.sellMarginPct
     });
     return;
   }
@@ -140,8 +153,9 @@ app.post("/api/commercial/price", requireRole, requireZone("commercial"), (req: 
     const result = sizeSwing(req.body?.input || {});
     res.json({
       zone: "commercial",
-      lineItems: swingLineItems(result, oemFlag()),
-      terms: unknownCommercialTerms()
+      lineItems: swingLineItems(result, flags),
+      terms: unknownCommercialTerms(),
+      sellMarginPct: flags.sellMarginPct
     });
     return;
   }
@@ -194,69 +208,39 @@ app.post("/api/commercial/proposal.pdf", requireRole, requireZone("commercial"),
 
 async function makePdf(body: Record<string, unknown>, role: string, includePricing: boolean) {
   const product = body.product === "swing" ? "swing" : "palisade";
+  const flags = oemFlag(typeof body.sellMarginPct === "number" ? body.sellMarginPct : null);
+  const brand = {
+    logoBytes: logoBytes(),
+    headerLogoBytes: headerLogoBytes()
+  };
   if (product === "palisade") {
     const result = sizePalisade((body.input as never) || {});
-    const items = includePricing ? palisadeLineItems(result, oemFlag()) : undefined;
-    const terms = unknownCommercialTerms();
-    return buildProposalPdf({
-      logoBytes: logoBytes(),
-      projectName: String((body.input as { projectName?: string })?.projectName || "Palisade draft"),
-      siteLocation: (body.input as { siteLocation?: string })?.siteLocation,
-      product: "Palisade",
-      role,
-      includePricing,
-      modelStatus: result.modelStatus,
-      documentStatus: result.documentStatus,
-      summaryRows: [
-        { label: "SKU", value: String(result.sales.sku ?? "—") },
-        { label: "Modules", value: String(result.sales.moduleCount ?? "—") },
-        { label: "Installed area", value: result.sales.areaM2 != null ? `${result.sales.areaM2.toFixed(1)} m²` : "—" },
-        { label: "ON-period flux", value: `${result.sales.fluxLmh} LMH` },
-        { label: "Cycle-average flux", value: `${result.sales.cycleAverageFluxLmh} LMH` },
-        { label: "Capacity", value: result.sales.capacityM3d != null ? `${result.sales.capacityM3d} m³/d` : "—" },
-        { label: "Total scour", value: result.scour.totalScourScfm != null ? `${result.scour.totalScourScfm} SCFM` : "—" },
-        { label: "Footprint", value: result.footprint.note }
-      ],
-      assumptions: result.assumptions,
-      warnings: result.warnings.map((w) => w.message),
-      missingFields: result.missingFields,
-      lineItems: items,
-      commercialTerms: includePricing
-        ? { warranty: terms.warranty.note, leadTime: terms.leadTime.note }
-        : undefined
-    });
+    return buildProposalPdf(
+      palisadeProposal(result, {
+        role,
+        includePricing,
+        flags,
+        ...brand,
+        cutsheetBytes: readPublic("catalog/palisade-cutsheet.pdf")
+      })
+    );
   }
   const result = sizeSwing((body.input as never) || {});
-  const items = includePricing ? swingLineItems(result, oemFlag()) : undefined;
-  const terms = unknownCommercialTerms();
-  return buildProposalPdf({
-    logoBytes: logoBytes(),
-    projectName: String((body.input as { projectName?: string })?.projectName || "Swing MBR draft"),
-    siteLocation: (body.input as { siteLocation?: string })?.siteLocation,
-    product: "Swing MBR",
-    role,
-    includePricing,
-    modelStatus: result.modelStatus,
-    documentStatus: result.documentStatus,
-    summaryRows: [
-      { label: "SKU", value: String(result.sales.sku ?? "—") },
-      { label: "Modules", value: String(result.sales.moduleCount ?? "—") },
-      { label: "Installed area", value: result.sales.areaM2 != null ? `${result.sales.areaM2.toFixed(1)} m²` : "—" },
-      { label: "Flux", value: result.sales.fluxLmh != null ? `${result.sales.fluxLmh.toFixed(2)} LMH` : "—" },
-      { label: "Capacity", value: `${result.sales.capacityM3d} m³/d` },
-      { label: "Footprint", value: result.sales.footprint?.note || "—" }
-    ],
-    assumptions: result.assumptions,
-    warnings: result.warnings.map((w) => w.message),
-    missingFields: result.missingFields,
-    lineItems: items,
-    commercialTerms: includePricing
-      ? { warranty: terms.warranty.note, leadTime: terms.leadTime.note }
-      : undefined
-  });
+  return buildProposalPdf(
+    swingProposal(result, {
+      role,
+      includePricing,
+      flags,
+      ...brand,
+      cutsheetBytes: readPublic("catalog/swing-cutsheet.pdf"),
+      shippingFigureBytes: readPublic("catalog/swing-shipping-height.png")
+    })
+  );
 }
 
 const dist = path.join(root, "dist");
+const pub = path.join(root, "public");
+if (fs.existsSync(pub)) app.use(express.static(pub));
 if (fs.existsSync(dist)) {
   app.use(express.static(dist));
   app.get(["/", "/select", "/proposal", "/proposal/*"], (_req, res) => {

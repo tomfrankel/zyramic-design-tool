@@ -45,6 +45,10 @@ export interface LineItem {
   unit: string;
   unitPrice: number | null;
   extendedPrice: number | null;
+  costUnitPrice?: number | null;
+  sellUnitPrice?: number | null;
+  sellExtendedPrice?: number | null;
+  marginPct?: number | null;
   flag: "priced" | "UNKNOWN" | "TBD" | "OEM_ESTIMATE_STUB";
   note: string;
   commercialOnly: boolean;
@@ -81,6 +85,10 @@ export interface PalisadeInput {
   tmpLimitKpa?: number;
   actualTmpKpa?: number | null;
   selectedModulePlates?: 130 | 260 | null;
+  tankHeightM?: number | null;
+  tankWidthM?: number | null;
+  tankLengthM?: number | null;
+  trains?: CapacityTrain[];
   submergenceM?: number | null;
   pipeLossKpa?: number | null;
   fittingsLossKpa?: number | null;
@@ -88,6 +96,14 @@ export interface PalisadeInput {
   moduleLossKpa?: number | null;
   targetWaterQuality?: string;
 }
+
+export interface CapacityTrain {
+  flowM3d: number;
+  units: number;
+}
+
+export type SwingFluxMode = "alper_12_lmh" | "industry_map";
+export type SwingPackMode = "alper_2wide" | "linear_design_tool";
 
 export interface SwingInput {
   projectName?: string;
@@ -99,6 +115,10 @@ export interface SwingInput {
   industry: SwingIndustry;
   selectedSku?: string | null;
   preferSeries?: "8" | "9" | "auto";
+  fluxMode?: SwingFluxMode;
+  packMode?: SwingPackMode;
+  preferDeck?: number | "auto";
+  trains?: CapacityTrain[];
 }
 
 export type SwingIndustry =

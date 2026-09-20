@@ -2,14 +2,41 @@ import type { LineItem } from "./types.js";
 import type { PalisadeResult } from "./palisade.js";
 import type { SwingResult } from "./swing.js";
 
+/** Alper Attachment-3 budgetary stub. Not a Zyramic list price. */
+export const ALPER_SWING_BUDGETARY_USD_PER_M2 = 30;
+
 export interface CommercialFlags {
   swingOemUsdPerM2?: number | null;
+  palisadeUsdPerM2?: number | null;
+  sellMarginPct?: number | null;
+}
+
+export function applySellMargin(cost: number | null, marginPct: number | null): number | null {
+  if (cost == null || marginPct == null || Number.isNaN(marginPct)) return null;
+  return Number((cost * (1 + marginPct / 100)).toFixed(2));
+}
+
+function withMargin(item: LineItem, marginPct: number | null): LineItem {
+  const cost = item.costUnitPrice ?? item.unitPrice;
+  const sellUnit = applySellMargin(cost, marginPct);
+  const sellExt =
+    sellUnit != null ? Number((sellUnit * item.qty).toFixed(2)) : applySellMargin(item.extendedPrice, marginPct);
+  return {
+    ...item,
+    costUnitPrice: cost,
+    sellUnitPrice: sellUnit,
+    sellExtendedPrice: sellExt,
+    marginPct: cost != null ? marginPct : null,
+    unitPrice: sellUnit ?? item.unitPrice,
+    extendedPrice: sellExt ?? item.extendedPrice
+  };
 }
 
 export function palisadeLineItems(result: PalisadeResult, flags: CommercialFlags = {}): LineItem[] {
   const sku = result.selectedModule?.sku ?? "PAL-TBD";
   const qty = result.selectedModule?.moduleCount ?? 0;
   const area = result.selectedModule?.installedAreaM2 ?? 0;
+  const palPrice = flags.palisadeUsdPerM2;
   const items: LineItem[] = [
     {
       sku,
@@ -51,25 +78,30 @@ export function palisadeLineItems(result: PalisadeResult, flags: CommercialFlags
       description: "Installed membrane area (takeoff)",
       qty: Number(area.toFixed(2)),
       unit: "m²",
-      unitPrice: null,
-      extendedPrice: null,
-      flag: "UNKNOWN",
-      note: "Area takeoff only. Not a price.",
+      unitPrice: palPrice ?? null,
+      extendedPrice: palPrice != null ? Number((palPrice * area).toFixed(2)) : null,
+      costUnitPrice: palPrice ?? null,
+      flag: palPrice != null ? "OEM_ESTIMATE_STUB" : "UNKNOWN",
+      note:
+        palPrice != null
+          ? "Optional Palisade stub only. Not a list price."
+          : "Area takeoff only. Palisade commercial remains UNKNOWN unless a stub is provided.",
       commercialOnly: true
     });
   }
-  void flags;
-  return items;
+  return items.map((i) => withMargin(i, flags.sellMarginPct ?? null));
 }
 
 export function swingLineItems(result: SwingResult, flags: CommercialFlags = {}): LineItem[] {
   const sku = result.selected?.sku ?? "SWG-TBD";
+  const eng = result.selected?.engSku;
   const qty = result.selected?.quantity ?? 0;
   const area = result.selected?.installedAreaM2 ?? 0;
+  const oem = flags.swingOemUsdPerM2 ?? ALPER_SWING_BUDGETARY_USD_PER_M2;
   const items: LineItem[] = [
     {
       sku,
-      description: "Swing MBR module",
+      description: `Swing MBR module${eng ? ` (${eng})` : ""}`,
       qty,
       unit: "module",
       unitPrice: null,
@@ -102,33 +134,35 @@ export function swingLineItems(result: SwingResult, flags: CommercialFlags = {})
     }
   ];
 
-  const oem = flags.swingOemUsdPerM2;
-  if (oem != null && oem > 0 && area > 0) {
+  if (area > 0 && oem > 0) {
     items.push({
       sku: "SWG-OEM-EST-STUB",
-      description: "Optional Chinese OEM estimate stub (not a customer price)",
+      description: "Budgetary Swing module stub (Alper Attachment-3)",
       qty: Number(area.toFixed(2)),
       unit: "m²",
       unitPrice: oem,
       extendedPrice: Number((oem * area).toFixed(2)),
+      costUnitPrice: oem,
       flag: "OEM_ESTIMATE_STUB",
-      note: "Environment stub only. Screening estimate — not a quote, not a warranty, not US fab.",
-      commercialOnly: true
-    });
-  } else {
-    items.push({
-      sku: "SWG-OEM-EST-STUB",
-      description: "Optional Chinese OEM estimate stub",
-      qty: Number(area.toFixed(2)),
-      unit: "m²",
-      unitPrice: null,
-      extendedPrice: null,
-      flag: "UNKNOWN",
-      note: "Set SWING_OEM_ESTIMATE_USD_PER_M2 to enable the screening stub. Blank = unknown.",
+      note: `$${oem}/m² STUB/OEM budgetary screening — not a customer list price, not US fab, not a warranty.`,
       commercialOnly: true
     });
   }
-  return items;
+
+  return items.map((i) => withMargin(i, flags.sellMarginPct ?? null));
+}
+
+export function stripCommercialSecrets(items: LineItem[]): LineItem[] {
+  return items.map((i) => ({
+    ...i,
+    unitPrice: null,
+    extendedPrice: null,
+    costUnitPrice: null,
+    sellUnitPrice: null,
+    sellExtendedPrice: null,
+    marginPct: null,
+    note: "Pricing hidden in the sizing zone."
+  }));
 }
 
 export function unknownCommercialTerms() {

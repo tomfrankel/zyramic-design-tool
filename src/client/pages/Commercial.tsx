@@ -20,7 +20,10 @@ export function CommercialPage() {
 
   return (
     <>
-      <div className="banner">Commercial zone — sales / engineering / admin only. No invented warranty or lead time. Customer lists start empty in this public draft.</div>
+      <div className="banner">
+        Commercial zone — sales / engineering / admin only. Ask for sell margin % on each quote (no company default).
+        Customer never sees cost or margin. No invented warranty or lead time. Customer lists start empty in this public draft.
+      </div>
       {error ? <div className="wall">{error}</div> : null}
       <div className="grid-2">
         <section className="card">

@@ -23,9 +23,9 @@ export function LoginPage() {
           }
         }}
       >
-        <img src="/brand/zyramic-logo.png" alt="Zyramic" />
+        <img src="/brand/logo-header.png" alt="Zyramic" />
         <h2>Proposal Software</h2>
-        <p className="muted">Draft role wall. Customer stays in sizing. Sales, engineering, and admin can open the commercial zone.</p>
+        <p className="muted">Draft role wall. Customer stays in sizing. Sales, engineering, and admin can open the commercial zone. Demo key matches the role name.</p>
         <div className="field">
           <label>Role</label>
           <select

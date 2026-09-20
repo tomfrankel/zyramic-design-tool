@@ -1,12 +1,36 @@
 import { useEffect, useMemo, useState } from "react";
 import { screenPalisadeCip } from "../../shared/cip";
-import { palisadeLineItems, unknownCommercialTerms } from "../../shared/lineItems";
-import { sizePalisade } from "../../shared/palisade";
+import { ARGES_TRAINS, palisadeCapacityTable, sizePalisade } from "../../shared/palisade";
+import { palisadeProposal } from "../../shared/proposal";
 import { canSeePricing } from "../../shared/roles";
 import type { PalisadeInput } from "../../shared/types";
-import { cipApi, downloadPdf, getRole, loadLogo, persistQuote, priceApi, sizePalisadeApi } from "../lib/api";
+import { cipApi, downloadPdf, getRole, loadCutsheet, loadLogo, persistQuote, priceApi, sizePalisadeApi } from "../lib/api";
 
-const defaultInput: PalisadeInput = {
+const argesIraq: PalisadeInput = {
+  projectName: "Arges / Ahmet Iraq MBR",
+  siteLocation: "Iraq — municipal MBR (modules only)",
+  application: "Municipal MBR modules — Palisade",
+  designer: "Engineering review",
+  targetPermeateM3d: 200,
+  minTemperatureC: 15,
+  onPeriodFluxLmh: 15,
+  cycleOnMin: 8,
+  cycleRelaxMin: 2,
+  tmpLimitKpa: 15,
+  selectedModulePlates: null,
+  tankHeightM: 3.0,
+  tankWidthM: 2.4,
+  tankLengthM: 12.76,
+  trains: ARGES_TRAINS,
+  mlssMgL: 8000,
+  codMgL: 615,
+  bod5MgL: 320,
+  tssMgL: 350,
+  nh4nMgL: 45,
+  ph: 7.9
+};
+
+const audit1000: PalisadeInput = {
   projectName: "Audit case — 1,000 m³/d",
   siteLocation: "Demo site",
   application: "Municipal / industrial MBR (modules only)",
@@ -34,12 +58,15 @@ function num(v: string): number | null {
 
 export function PalisadePage() {
   const [tab, setTab] = useState("input");
-  const [input, setInput] = useState<PalisadeInput>(defaultInput);
-  const [result, setResult] = useState(() => sizePalisade(defaultInput));
+  const [input, setInput] = useState<PalisadeInput>(argesIraq);
+  const [result, setResult] = useState(() => sizePalisade(argesIraq));
   const [cip, setCip] = useState(() => screenPalisadeCip());
   const [commercial, setCommercial] = useState<Awaited<ReturnType<typeof priceApi>> | null>(null);
   const [persistNote, setPersistNote] = useState("");
+  const [sellMarginPct, setSellMarginPct] = useState<number | null>(null);
+  const [marginError, setMarginError] = useState("");
   const role = getRole();
+  const pricing = !!(role && canSeePricing(role));
 
   const patch = (partial: Partial<PalisadeInput>) => setInput((prev) => ({ ...prev, ...partial }));
 
@@ -50,37 +77,28 @@ export function PalisadePage() {
     return () => { alive = false; };
   }, [input]);
 
-  const summary = useMemo(() => [
-    { label: "SKU", value: String(result.sales.sku ?? "—") },
-    { label: "Modules", value: String(result.sales.moduleCount ?? "—") },
-    { label: "Installed area", value: result.sales.areaM2 != null ? `${result.sales.areaM2.toFixed(1)} m²` : "—" },
-    { label: "ON-period flux", value: `${result.sales.fluxLmh} LMH` },
-    { label: "Cycle-average flux", value: `${result.sales.cycleAverageFluxLmh} LMH` },
-    { label: "Capacity", value: result.sales.capacityM3d != null ? `${result.sales.capacityM3d} m³/d` : "—" },
-    { label: "Total scour", value: result.scour.totalScourScfm != null ? `${result.scour.totalScourScfm} SCFM` : "—" },
-    { label: "Footprint", value: result.footprint.note }
-  ], [result]);
+  const capacity = useMemo(
+    () => palisadeCapacityTable(input, input.trains?.length ? input.trains : ARGES_TRAINS),
+    [input]
+  );
 
   async function pdf(includePricing: boolean) {
-    const logo = await loadLogo();
-    await downloadPdf({
-      logoBytes: logo,
-      projectName: input.projectName || "Palisade draft",
-      siteLocation: input.siteLocation,
-      product: "Palisade",
-      role: role || "customer",
-      includePricing,
-      modelStatus: result.modelStatus,
-      documentStatus: result.documentStatus,
-      summaryRows: summary,
-      assumptions: result.assumptions,
-      warnings: result.warnings.map((w) => w.message),
-      missingFields: result.missingFields,
-      lineItems: includePricing ? palisadeLineItems(result) : undefined,
-      commercialTerms: includePricing
-        ? { warranty: unknownCommercialTerms().warranty.note, leadTime: unknownCommercialTerms().leadTime.note }
-        : undefined
-    });
+    if (includePricing && sellMarginPct == null) {
+      setMarginError("Enter a sell margin % before issuing a commercial PDF. No company default is assumed.");
+      return;
+    }
+    setMarginError("");
+    const priced = includePricing ? await priceApi("palisade", input, sellMarginPct) : null;
+    if (priced) setCommercial(priced);
+    await downloadPdf(
+      palisadeProposal(result, {
+        role: role || "customer",
+        includePricing,
+        flags: { sellMarginPct },
+        logoBytes: await loadLogo(),
+        cutsheetBytes: await loadCutsheet("palisade")
+      })
+    );
   }
 
   return (
@@ -88,15 +106,25 @@ export function PalisadePage() {
       <div className="banner">{result.documentStatus}</div>
       <div className="card">
         <h2>Palisade sizing</h2>
-        <p className="muted">Modules, not a complete system. 15 LMH is the instantaneous ON-period assumption. Scour is module scour-air demand.</p>
+        <p className="muted">
+          Modules, not a complete system. Alper acceptance: 15 LMH ON × 8/2 → 12 LMH cycle-average; Area = Q / 12.
+          Cold TCF is check-only and does not change module count. Prefer PAL-130 when tank height ≤ ~3.00 m.
+        </p>
+        <div className="actions" style={{ marginTop: 0 }}>
+          <button onClick={() => setInput(argesIraq)}>Load Arges / Iraq baseline</button>
+          <button onClick={() => setInput(audit1000)}>Load 1,000 m³/d audit case</button>
+        </div>
         <div className="kpi">
-          <div><span className="muted">Required area</span><strong>{fmt(result.sizing.requiredAreaM2, "m²")}</strong></div>
+          <div><span className="muted">Required area @12</span><strong>{fmt(result.sizing.requiredAreaM2, "m²")}</strong></div>
           <div><span className="muted">Cycle-average flux</span><strong>{fmt(result.sizing.cycleAverageFluxLmh, "LMH")}</strong></div>
           <div><span className="muted">Selected</span><strong>{result.selectedModule?.sku ?? "—"} × {result.selectedModule?.moduleCount ?? "—"}</strong></div>
-          <div><span className="muted">Scour</span><strong>{fmt(result.scour.totalScourScfm, "SCFM")}</strong></div>
+          <div><span className="muted">TCF check only</span><strong>{fmt(result.sizing.temperatureCorrectionFactor)}</strong></div>
         </div>
+        {result.sizing.pal260Blocked ? (
+          <div className="banner">PAL-260 blocked: tank height {result.sizing.tankHeightM} m is below the 3.05 m envelope. Using PAL-130.</div>
+        ) : null}
         <div className="tabs">
-          {["input", "sizing", "modules", "scour", "cip", "summary", "assumptions"].map((id) => (
+          {["input", "sizing", "modules", "capacity", "scour", "cip", "summary", "assumptions"].map((id) => (
             <button key={id} className={tab === id ? "active" : ""} onClick={() => setTab(id)}>{id}</button>
           ))}
         </div>
@@ -113,6 +141,9 @@ export function PalisadePage() {
             <Num label="ON-period flux (LMH)" value={input.onPeriodFluxLmh} onChange={(v) => patch({ onPeriodFluxLmh: v ?? 15 })} />
             <Num label="Cycle ON (min)" value={input.cycleOnMin} onChange={(v) => patch({ cycleOnMin: v ?? 8 })} />
             <Num label="Cycle RELAX (min)" value={input.cycleRelaxMin} onChange={(v) => patch({ cycleRelaxMin: v ?? 2 })} />
+            <Num label="Tank height (m)" value={input.tankHeightM} onChange={(v) => patch({ tankHeightM: v })} />
+            <Num label="Tank width (m)" value={input.tankWidthM} onChange={(v) => patch({ tankWidthM: v })} />
+            <Num label="Tank length (m)" value={input.tankLengthM} onChange={(v) => patch({ tankLengthM: v })} />
             <Num label="COD (mg/L)" value={input.codMgL} onChange={(v) => patch({ codMgL: v })} />
             <Num label="BOD5 (mg/L)" value={input.bod5MgL} onChange={(v) => patch({ bod5MgL: v })} />
             <Num label="TSS (mg/L)" value={input.tssMgL} onChange={(v) => patch({ tssMgL: v })} />
@@ -125,7 +156,7 @@ export function PalisadePage() {
                 value={input.selectedModulePlates ?? ""}
                 onChange={(e) => patch({ selectedModulePlates: e.target.value ? Number(e.target.value) as 130 | 260 : null })}
               >
-                <option value="">Select 130 or 260</option>
+                <option value="">Auto (prefer 130 when tank H ≤ 3.00 m)</option>
                 <option value="130">PAL-130</option>
                 <option value="260">PAL-260</option>
               </select>
@@ -139,9 +170,10 @@ export function PalisadePage() {
               <Row k="Design permeate" v={`${fmt(result.sizing.designPermeateM3d, "m³/d")} / ${fmt(result.sizing.designPermeateM3h, "m³/h")}`} />
               <Row k="ON-period flux" v={`${result.sizing.onPeriodFluxLmh} LMH`} n="Engineering assumption — instantaneous ON/suction" />
               <Row k="ON fraction" v={fmt(result.sizing.onFraction)} />
-              <Row k="Cycle-average flux" v={fmt(result.sizing.cycleAverageFluxLmh, "LMH")} n="Sizing basis" />
+              <Row k="Cycle-average flux" v={fmt(result.sizing.cycleAverageFluxLmh, "LMH")} n="Sizing basis — Area@12" />
               <Row k="Required area" v={fmt(result.sizing.requiredAreaM2, "m²")} />
-              <Row k="Cold-temperature area check" v={fmt(result.sizing.coldTemperatureAreaM2, "m²")} />
+              <Row k="Cold-temperature area check" v={fmt(result.sizing.coldTemperatureAreaM2, "m²")} n="CHECK ONLY — does not change module count" />
+              <Row k="TCF" v={fmt(result.sizing.temperatureCorrectionFactor)} n="CHECK ONLY" />
               <Row k="Area at 12.5 LMH" v={fmt(result.sizing.areaAtLowFluxM2, "m²")} n="Sensitivity only" />
               <Row k="Area at 21 LMH" v={fmt(result.sizing.areaAtHighFluxM2, "m²")} n="Sensitivity only" />
             </tbody>
@@ -150,7 +182,7 @@ export function PalisadePage() {
 
         {tab === "modules" && (
           <>
-            <p className="muted">Minimum whole modules to meet required area. No +10% margin and no N+1. Do not infer a 130 envelope by halving the 260 envelope.</p>
+            <p className="muted">Minimum whole modules to meet Area@12. No +10% margin and no N+1. Do not infer a 130 envelope by halving the 260 envelope.</p>
             <table>
               <thead>
                 <tr><th>SKU</th><th>Plates</th><th>m²/mod</th><th>Count</th><th>Installed m²</th><th>Rounding</th><th>Scour SCFM</th><th>Envelope</th></tr>
@@ -166,6 +198,33 @@ export function PalisadePage() {
                     <td>{o.roundingDifferenceM2 != null ? o.roundingDifferenceM2.toFixed(2) : "—"}</td>
                     <td>{o.totalScourScfm ?? "—"}</td>
                     <td>{o.envelopeM ? o.envelopeM.join(" × ") + " m" : "project CAD"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        )}
+
+        {tab === "capacity" && (
+          <>
+            <p className="muted">Alper multi-unit BOM for 100 / 150 / 200 / 500 / 600 m³/d (3+5+1+1+1 = 11 units).</p>
+            <table>
+              <thead>
+                <tr>
+                  <th>Flow</th><th>Units</th><th>Area@12</th><th>SKU</th><th>Mods/unit</th><th>Area/unit</th><th>Mods project</th><th>Area project</th>
+                </tr>
+              </thead>
+              <tbody>
+                {capacity.map((r) => (
+                  <tr key={r.flowM3d}>
+                    <td>{r.flowM3d} m³/d</td>
+                    <td>×{r.units}</td>
+                    <td>{r.requiredAreaM2?.toFixed(2)}</td>
+                    <td>{r.sku}</td>
+                    <td>{r.modulesEach}</td>
+                    <td>{r.areaEachM2?.toFixed(1)}</td>
+                    <td>{r.modulesProject}</td>
+                    <td>{r.areaProjectM2?.toFixed(1)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -206,7 +265,9 @@ export function PalisadePage() {
             <p><span className="tag">{result.modelStatus}</span> <span className={`tag ${result.operating.warranty.warrantyOutside ? "bad" : "ok"}`}>{result.operating.warrantyEnvelopeStatus}</span></p>
             <table>
               <tbody>
-                {summary.map((row) => <Row key={row.label} k={row.label} v={row.value} />)}
+                <Row k="SKU" v={String(result.sales.sku ?? "—")} />
+                <Row k="Modules" v={String(result.sales.moduleCount ?? "—")} />
+                <Row k="Installed area" v={result.sales.areaM2 != null ? `${result.sales.areaM2.toFixed(1)} m²` : "—"} />
                 <Row k="Warranty COD" v={result.operating.warranty.codStatus} />
                 <Row k="MLSS guidance" v={result.operating.mlssStatus} />
                 <Row k="CIP" v={result.cipStatus} />
@@ -226,17 +287,26 @@ export function PalisadePage() {
           </table>
         )}
 
+        {pricing ? (
+          <div className="field" style={{ maxWidth: 280, marginTop: "1rem" }}>
+            <label>Sell margin % (required for commercial PDF)</label>
+            <input
+              value={sellMarginPct ?? ""}
+              placeholder="blank — no company default"
+              onChange={(e) => setSellMarginPct(num(e.target.value))}
+            />
+            <p className="muted">Applied on top of cost stubs only. Customer never sees cost or margin.</p>
+          </div>
+        ) : null}
+        {marginError ? <div className="banner">{marginError}</div> : null}
+
         <div className="actions">
-          <button className="primary" onClick={() => pdf(false)}>Download sizing PDF</button>
-          {role && canSeePricing(role) ? (
+          <button className="primary" onClick={() => pdf(false)}>Download 5-page sizing PDF</button>
+          {pricing ? (
             <>
-              <button className="primary" onClick={async () => {
-                const priced = await priceApi("palisade", input);
-                setCommercial(priced);
-                await pdf(true);
-              }}>Download commercial PDF</button>
+              <button className="primary" onClick={() => pdf(true)}>Download 5-page commercial PDF</button>
               <button onClick={async () => {
-                const priced = await priceApi("palisade", input);
+                const priced = await priceApi("palisade", input, sellMarginPct);
                 setCommercial(priced);
                 const saved = await persistQuote({
                   product: "palisade",
@@ -252,14 +322,21 @@ export function PalisadePage() {
           )}
         </div>
         {persistNote ? <p className="muted">{persistNote}</p> : null}
-        {commercial ? (
+        {commercial && pricing ? (
           <div style={{ marginTop: "1rem" }}>
             <h3>Priceable line items</h3>
             <table>
-              <thead><tr><th>SKU</th><th>Qty</th><th>Flag</th><th>Note</th></tr></thead>
+              <thead><tr><th>SKU</th><th>Qty</th><th>Flag</th><th>Cost stub</th><th>Sell</th><th>Note</th></tr></thead>
               <tbody>
                 {commercial.lineItems.map((i) => (
-                  <tr key={i.sku}><td>{i.sku}</td><td>{i.qty} {i.unit}</td><td><span className="tag warn">{i.flag}</span></td><td>{i.note}</td></tr>
+                  <tr key={i.sku}>
+                    <td>{i.sku}</td>
+                    <td>{i.qty} {i.unit}</td>
+                    <td><span className="tag warn">{i.flag}</span></td>
+                    <td>{money(i.costUnitPrice ?? i.unitPrice)}</td>
+                    <td>{money(i.sellUnitPrice)}</td>
+                    <td>{i.note}</td>
+                  </tr>
                 ))}
               </tbody>
             </table>
@@ -283,4 +360,8 @@ function fmt(v: number | null | undefined, unit = "") {
   if (v == null || Number.isNaN(v)) return "—";
   const n = Math.abs(v) >= 100 ? v.toFixed(2) : v.toFixed(3);
   return unit ? `${n} ${unit}` : n;
+}
+function money(v: number | null | undefined) {
+  if (v == null) return "—";
+  return `$${v.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
 }

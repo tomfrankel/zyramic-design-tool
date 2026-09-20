@@ -7,13 +7,13 @@ export function SelectPage() {
   return (
     <>
       <div className="banner">
-        PRELIMINARY draft. Palisade and Swing MBR modules only. This is not a complete-system designer and not a final customer/field issue.
+        PRELIMINARY draft. Palisade and Swing MBR modules only. Alper Özkan Sep 18 Arges/Ahmet Iraq quote is the acceptance baseline. Not a complete-system designer and not a final customer/field issue.
       </div>
       <section className="hero">
         <div>
           <h2>Select a module family</h2>
           <p className="muted">
-            Sizing is customer-eligible. Pricing, customer lists, and past quotes stay in the commercial zone.
+            Sizing is customer-eligible. Pricing, customer lists, sell margin, and past quotes stay in the commercial zone.
             Later public path: zyramic.com/proposal with the same /proposal and /select routes.
           </p>
           <div className="grid-2" style={{ marginTop: "1rem" }}>
@@ -23,7 +23,7 @@ export function SelectPage() {
             </Link>
             <Link className="product-card" to="/proposal/swing">
               <h3>Swing MBR</h3>
-              <p className="muted">Swing MBR module selection from the design-tool Database. Tank fit, industry flux, SKU, area, scour demand, and safety factor.</p>
+              <p className="muted">Swing MBR module selection. Default Alper 12 LMH + 2-wide pack; industry 0.34 m³/m²/d remains an alternate mode.</p>
             </Link>
           </div>
         </div>

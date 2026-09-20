@@ -14,7 +14,9 @@ describe("Swing design-tool replication", () => {
       tankLengthMm: 4400,
       tankWidthMm: 2750,
       tankHeightMm: 2800,
-      industry: "Domestic and Municipal"
+      industry: "Domestic and Municipal",
+      fluxMode: "industry_map",
+      packMode: "linear_design_tool"
     });
     expect(result.sizing.fluxM3m2d).toBeCloseTo(0.34, 6);
     expect(result.sizing.requiredAreaM2).toBeCloseTo(588.235294117647, 5);
@@ -39,7 +41,9 @@ describe("Swing design-tool replication", () => {
       tankLengthMm: 1000,
       tankWidthMm: 1000,
       tankHeightMm: 1200,
-      industry: "Domestic and Municipal"
+      industry: "Domestic and Municipal",
+      fluxMode: "industry_map",
+      packMode: "linear_design_tool"
     });
     expect(result.matches).toHaveLength(0);
     expect(result.warnings.some((w) => w.code === "NO_MATCH")).toBe(true);
