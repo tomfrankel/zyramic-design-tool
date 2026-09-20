@@ -23,6 +23,9 @@ async function tryFetch(url: string, init?: RequestInit) {
   try {
     const res = await fetch(url, { credentials: "include", ...init });
     if (res.status === 404) return null;
+    const ct = res.headers.get("content-type") || "";
+    // Static SPA hosts (here.now --spa) serve index.html for unknown /api paths.
+    if (!ct.includes("json") && !ct.includes("pdf") && !ct.includes("octet-stream")) return null;
     return res;
   } catch {
     return null;
@@ -50,22 +53,30 @@ export async function logout() {
   setRole(null);
 }
 
+async function jsonResult<T>(res: Response | null, fallback: () => T): Promise<T> {
+  if (!res?.ok) return fallback();
+  try {
+    const body = await res.json();
+    if (body && typeof body === "object" && "result" in body) return body.result as T;
+    return fallback();
+  } catch {
+    return fallback();
+  }
+}
+
 export async function sizePalisadeApi(input: PalisadeInput) {
   const res = await tryFetch("/api/sizing/palisade", json(input));
-  if (res?.ok) return (await res.json()).result;
-  return sizePalisade(input);
+  return jsonResult(res, () => sizePalisade(input));
 }
 
 export async function sizeSwingApi(input: SwingInput) {
   const res = await tryFetch("/api/sizing/swing", json(input));
-  if (res?.ok) return (await res.json()).result;
-  return sizeSwing(input);
+  return jsonResult(res, () => sizeSwing(input));
 }
 
 export async function cipApi(input: CipInput) {
   const res = await tryFetch("/api/sizing/palisade/cip", json(input));
-  if (res?.ok) return (await res.json()).result;
-  return screenPalisadeCip(input);
+  return jsonResult(res, () => screenPalisadeCip(input));
 }
 
 export async function priceApi(product: "palisade" | "swing", input: unknown, sellMarginPct?: number | null) {

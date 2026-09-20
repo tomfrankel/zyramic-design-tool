@@ -113,4 +113,8 @@ No secrets, live pricing tables, customer lists, OEM price sheets, or a real `.e
 
 ## Temporary public URL
 
-See the pull request description for the current here.now demo URL, claim link, and how to walk the Arges cases. The static SPA runs the engines in the browser. The Node server (`npm start`) is the supported long-term shape for zyramic.com/proposal.
+**Demo:** https://pastel-waffle-3b79.here.now/
+
+Anonymous SPA, expires ~24h unless claimed: https://here.now/c/up4-SriEiZyLhe-U
+
+Sign in with the role name as the demo key (`engineering`, `sales`, `admin`, `customer`). The static SPA runs the engines in the browser. The Node server (`npm start`) is the supported long-term shape for zyramic.com/proposal.
