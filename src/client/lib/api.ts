@@ -180,7 +180,13 @@ export async function persistQuote(payload: {
 }
 
 export async function downloadPdf(args: ProposalPdfInput) {
-  const bytes = await buildProposalPdf(args);
+  const bytes = await buildProposalPdf({
+    ...args,
+    logoBytes: args.logoBytes ?? (await loadNavyLogo()),
+    headerLogoBytes: args.headerLogoBytes ?? (await loadNavyLogo()),
+    serifFontBytes: args.serifFontBytes ?? (await loadBytes("/fonts/SourceSerif4-Semibold.ttf")),
+    kickerFontBytes: args.kickerFontBytes ?? (await loadBytes("/fonts/Archivo-Regular.ttf"))
+  });
   const blob = new Blob([bytes], { type: "application/pdf" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -201,7 +207,15 @@ async function loadBytes(url: string): Promise<Uint8Array | null> {
 }
 
 export async function loadLogo(): Promise<Uint8Array | null> {
-  return (await loadBytes("/brand/logo-pdf.png")) || (await loadBytes("/brand/logo-header.png")) || loadBytes("/brand/zyramic-logo.png");
+  return loadNavyLogo();
+}
+
+export async function loadOfficialLogo(): Promise<Uint8Array | null> {
+  return loadBytes("/brand/logo-official.png");
+}
+
+export async function loadNavyLogo(): Promise<Uint8Array | null> {
+  return loadBytes("/brand/logo-bw-white-official.png");
 }
 
 export async function loadCutsheet(product: "palisade" | "swing"): Promise<Uint8Array | null> {

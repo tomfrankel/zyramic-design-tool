@@ -8,7 +8,7 @@ import type {
 export const PALISADE_BASIS = {
   documentStatus: "PRELIMINARY — NOT FOR FINAL CUSTOMER / FIELD ISSUE",
   productPublicName: "Palisade",
-  productDescription: "Polymer flat-sheet MBR modules with on-board scour",
+  productDescription: "Polymer flat-sheet MBR modules with scour",
   plateAreaM2: 1.05,
   modules: {
     130: {

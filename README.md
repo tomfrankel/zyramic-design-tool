@@ -8,7 +8,7 @@ This is **not** the older “design tool” name. In the UI and in this README t
 
 **Acceptance baseline:** Alper Özkan’s Sep 18 Arges / Ahmet Iraq MBR quote. See `CHANGELOG.md`.
 
-Public copy names **Palisade** and **Swing MBR** only (modules, not systems). No OmniScour / EPSMEM / Liren / Thermo Fisher on public surfaces. Engineering view may show Alper `EPS8-*` SKUs; public alias is `SWG-*`.
+Public copy names **Palisade**, **Swing MBR**, **Scrub UF**, and **Ceramic** (modules, not systems). No OmniScour / On-Board Scour as product names; no aeration / diffuser / bubble; no EPSMEM / Liren / Thermo Fisher / Henry on public or customer PDFs. Engineering view may show Alper `EPS8-*` SKUs; public alias is `SWG-*`.
 
 ## What this draft does
 

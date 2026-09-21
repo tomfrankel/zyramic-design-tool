@@ -44,6 +44,9 @@ describe("5-page branded proposal PDF", () => {
     });
     expect(input.includePricing).toBe(false);
     expect(input.lineItems).toBeUndefined();
+    const publicBlob = JSON.stringify(input);
+    expect(publicBlob).not.toMatch(/EPS8|EPSMEM|OmniScour|On-Board Scour|Thermo Fisher|Liren|Henry|aeration|diffuser|bubble/i);
+    expect(input.summaryRows.some((r) => r.label === "Engineering SKU")).toBe(false);
     const bytes = await buildProposalPdf(input);
     const doc = await PDFDocument.load(bytes);
     expect(doc.getPageCount()).toBe(5);

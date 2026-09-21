@@ -31,11 +31,18 @@ function readPublic(rel: string): Uint8Array | null {
 }
 
 function logoBytes(): Uint8Array | null {
-  return readPublic("brand/logo-pdf.png") || readPublic("brand/logo-header.png") || readPublic("brand/zyramic-logo.png");
+  return readPublic("brand/logo-bw-white-official.png") || readPublic("brand/logo-official.png");
 }
 
 function headerLogoBytes(): Uint8Array | null {
-  return readPublic("brand/logo-header.png") || logoBytes();
+  return readPublic("brand/logo-bw-white-official.png") || logoBytes();
+}
+
+function brandFonts() {
+  return {
+    serifFontBytes: readPublic("fonts/SourceSerif4-Semibold.ttf"),
+    kickerFontBytes: readPublic("fonts/Archivo-Regular.ttf")
+  };
 }
 
 function oemFlag(sellMarginPct?: number | null) {
@@ -215,27 +222,29 @@ async function makePdf(body: Record<string, unknown>, role: string, includePrici
   };
   if (product === "palisade") {
     const result = sizePalisade((body.input as never) || {});
-    return buildProposalPdf(
-      palisadeProposal(result, {
+    return buildProposalPdf({
+      ...palisadeProposal(result, {
         role,
         includePricing,
         flags,
         ...brand,
         cutsheetBytes: readPublic("catalog/palisade-cutsheet.pdf")
-      })
-    );
+      }),
+      ...brandFonts()
+    });
   }
   const result = sizeSwing((body.input as never) || {});
-  return buildProposalPdf(
-    swingProposal(result, {
+  return buildProposalPdf({
+    ...swingProposal(result, {
       role,
       includePricing,
       flags,
       ...brand,
       cutsheetBytes: readPublic("catalog/swing-cutsheet.pdf"),
       shippingFigureBytes: readPublic("catalog/swing-shipping-height.png")
-    })
-  );
+    }),
+    ...brandFonts()
+  });
 }
 
 const dist = path.join(root, "dist");

@@ -4,6 +4,19 @@ import { palisadeLineItems, swingLineItems, unknownCommercialTerms, type Commerc
 import type { CapacityRow, ProposalPdfInput } from "./pdf.js";
 import type { PalisadeInput, SwingInput } from "./types.js";
 
+function isCustomerRole(role: string): boolean {
+  return role === "customer";
+}
+
+function withoutBlockedPublicNames<T extends { topic?: string; value?: string; message?: string; action?: string }>(
+  items: T[]
+): T[] {
+  return items.filter((item) => {
+    const blob = `${item.topic || ""} ${item.value || ""} ${item.message || ""} ${item.action || ""}`;
+    return !/EPS8|EPSMEM|OmniScour|On-Board Scour|Thermo Fisher|Liren|Henry|aeration|diffuser|bubble/i.test(blob);
+  });
+}
+
 export function palisadeCapacityRows(input: PalisadeInput): CapacityRow[] {
   return palisadeCapacityTable(input, input.trains).map((r) => ({
     flowM3d: r.flowM3d,
@@ -59,8 +72,8 @@ export function palisadeProposal(
     modelStatus: result.modelStatus,
     documentStatus: result.documentStatus,
     summaryRows: [
-      { label: "SKU", value: String(result.sales.sku ?? "—") },
-      { label: "Modules", value: String(result.sales.moduleCount ?? "—") },
+      { label: "SKU", value: String(result.sales.sku ?? "-") },
+      { label: "Modules", value: String(result.sales.moduleCount ?? "-") },
       { label: "Installed area", value: result.sales.areaM2 != null ? `${result.sales.areaM2.toFixed(1)} m²` : "—" },
       { label: "ON-period flux", value: `${result.sales.fluxLmh} LMH` },
       { label: "Cycle-average flux", value: `${result.sales.cycleAverageFluxLmh} LMH` },
@@ -72,8 +85,8 @@ export function palisadeProposal(
       { label: "Footprint", value: result.footprint.note }
     ],
     capacityTable: input.trains?.length ? palisadeCapacityRows(input) : undefined,
-    assumptions: result.assumptions,
-    warnings: result.warnings.map((w) => w.message),
+    assumptions: isCustomerRole(opts.role) ? withoutBlockedPublicNames(result.assumptions) : result.assumptions,
+    warnings: (isCustomerRole(opts.role) ? withoutBlockedPublicNames(result.warnings) : result.warnings).map((w) => w.message),
     missingFields: result.missingFields,
     lineItems: opts.includePricing ? palisadeLineItems(result, opts.flags) : undefined,
     commercialTerms: opts.includePricing
@@ -114,9 +127,11 @@ export function swingProposal(
     modelStatus: result.modelStatus,
     documentStatus: result.documentStatus,
     summaryRows: [
-      { label: "Public SKU", value: String(result.sales.sku ?? "—") },
-      { label: "Engineering SKU", value: String(result.sales.engSku ?? "—") },
-      { label: "Modules", value: String(result.sales.moduleCount ?? "—") },
+      { label: "SKU", value: String(result.sales.sku ?? "-") },
+      ...(isCustomerRole(opts.role)
+        ? []
+        : [{ label: "Engineering SKU", value: String(result.sales.engSku ?? "-") }]),
+      { label: "Modules", value: String(result.sales.moduleCount ?? "-") },
       { label: "Installed area", value: result.sales.areaM2 != null ? `${result.sales.areaM2.toFixed(1)} m²` : "—" },
       { label: "Flux mode", value: result.fluxMode },
       { label: "Flux", value: result.sales.fluxLmh != null ? `${result.sales.fluxLmh.toFixed(2)} LMH` : "—" },
@@ -124,9 +139,13 @@ export function swingProposal(
       { label: "Capacity", value: `${result.sales.capacityM3d} m³/d` },
       { label: "Footprint", value: result.sales.footprint?.note || "—" }
     ],
-    capacityTable: input.trains?.length ? swingCapacityRows(input) : undefined,
-    assumptions: result.assumptions,
-    warnings: result.warnings.map((w) => w.message),
+    capacityTable: input.trains?.length
+      ? swingCapacityRows(input).map((r) =>
+          isCustomerRole(opts.role) ? { ...r, engSku: undefined } : r
+        )
+      : undefined,
+    assumptions: isCustomerRole(opts.role) ? withoutBlockedPublicNames(result.assumptions) : result.assumptions,
+    warnings: (isCustomerRole(opts.role) ? withoutBlockedPublicNames(result.warnings) : result.warnings).map((w) => w.message),
     missingFields: result.missingFields,
     lineItems: opts.includePricing ? swingLineItems(result, opts.flags) : undefined,
     commercialTerms: opts.includePricing

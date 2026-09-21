@@ -1,3 +1,4 @@
+import fontkit from "@pdf-lib/fontkit";
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from "pdf-lib";
 import type { LineItem } from "./types.js";
 
@@ -26,6 +27,8 @@ export interface CapacityRow {
 export interface ProposalPdfInput {
   logoBytes?: Uint8Array | null;
   headerLogoBytes?: Uint8Array | null;
+  serifFontBytes?: Uint8Array | null;
+  kickerFontBytes?: Uint8Array | null;
   cutsheetBytes?: Uint8Array | null;
   extraCutsheetBytes?: Uint8Array | null;
   shippingFigureBytes?: Uint8Array | null;
@@ -83,75 +86,94 @@ function wrap(text: string, font: PDFFont, size: number, width: number): string[
   return lines;
 }
 
+async function embedCustom(doc: PDFDocument, bytes: Uint8Array | null | undefined, fallback: PDFFont): Promise<PDFFont> {
+  if (!bytes || !bytes.length) return fallback;
+  try {
+    return await doc.embedFont(bytes, { subset: true });
+  } catch {
+    return fallback;
+  }
+}
+
 export async function buildProposalPdf(input: ProposalPdfInput): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
-  const font = await doc.embedFont(StandardFonts.Helvetica);
-  const bold = await doc.embedFont(StandardFonts.HelveticaBold);
+  doc.registerFontkit(fontkit);
+  const helv = await doc.embedFont(StandardFonts.Helvetica);
+  const helvBold = await doc.embedFont(StandardFonts.HelveticaBold);
+  const kicker = await embedCustom(doc, input.kickerFontBytes, helv);
+  const serif = await embedCustom(doc, input.serifFontBytes, helvBold);
+  const font = kicker;
+  const bold = serif;
   const pageSize: [number, number] = [612, 792];
 
-  let logo = null as Awaited<ReturnType<PDFDocument["embedPng"]>> | null;
-  const logoSrc = input.logoBytes || input.headerLogoBytes;
-  if (logoSrc) {
+  let navyLogo = null as Awaited<ReturnType<PDFDocument["embedPng"]>> | null;
+  const navySrc = input.headerLogoBytes || input.logoBytes;
+  if (navySrc) {
     try {
-      logo = await doc.embedPng(logoSrc);
+      navyLogo = await doc.embedPng(navySrc);
     } catch {
-      logo = null;
+      navyLogo = null;
     }
   }
 
   const chrome = (page: PDFPage, title: string, pageNo: number) => {
-    page.drawRectangle({ x: 0, y: 0, width: 612, height: 792, color: CREAM });
-    page.drawRectangle({ x: 0, y: 752, width: 612, height: 40, color: NAVY_DEEP });
-    page.drawRectangle({ x: 0, y: 748, width: 612, height: 4, color: COPPER });
-    if (logo) {
-      const h = 26;
-      const w = (logo.width / logo.height) * h;
-      page.drawImage(logo, { x: 28, y: 758, width: w, height: h });
+    page.drawRectangle({ x: 0, y: 0, width: 612, height: 792, color: PAPER });
+    page.drawRectangle({ x: 0, y: 748, width: 612, height: 44, color: NAVY });
+    page.drawRectangle({ x: 0, y: 744, width: 612, height: 4, color: COPPER });
+    page.drawRectangle({ x: 0, y: 740, width: 612, height: 4, color: TEAL });
+    if (navyLogo) {
+      const h = 22;
+      const w = Math.min(160, (navyLogo.width / navyLogo.height) * h);
+      page.drawImage(navyLogo, { x: 28, y: 758, width: w, height: h });
     } else {
-      page.drawText("ZYRAMIC", { x: 28, y: 766, size: 12, font: bold, color: CREAM });
+      page.drawText("ZYRAMIC", { x: 28, y: 764, size: 12, font: serif, color: CREAM });
     }
-    page.drawText("PROPOSAL SOFTWARE  -  DRAFT", { x: 320, y: 768, size: 8, font: bold, color: COPPER });
-    page.drawText(pdfSafe(title), { x: 28, y: 728, size: 14, font: bold, color: NAVY });
-    page.drawRectangle({ x: 0, y: 0, width: 612, height: 32, color: NAVY_DEEP });
+    page.drawText("PROPOSAL SOFTWARE  -  DRAFT", { x: 320, y: 766, size: 8, font: kicker, color: COPPER });
+    page.drawText(pdfSafe(title), { x: 28, y: 718, size: 16, font: serif, color: NAVY });
+    page.drawRectangle({ x: 0, y: 0, width: 612, height: 32, color: NAVY });
+    page.drawRectangle({ x: 0, y: 32, width: 612, height: 3, color: COPPER });
+    page.drawRectangle({ x: 0, y: 35, width: 612, height: 3, color: TEAL });
     page.drawText(`10 Tucker Dr, Poughkeepsie, NY  -  zyramic.com  -  page ${pageNo} of 5`, {
       x: 28,
       y: 12,
       size: 8,
-      font,
+      font: kicker,
       color: CREAM
     });
     page.drawText("Art slot - Muse graphics can replace this chrome later", {
       x: 340,
       y: 12,
       size: 7,
-      font,
+      font: kicker,
       color: LINE
     });
   };
 
-  // 1 Cover
+  // 1 Cover — Product Catalog Rev10 hierarchy: navy, official mark, Archivo kicker, Source Serif headline
   const cover = doc.addPage(pageSize);
   cover.drawRectangle({ x: 0, y: 0, width: 612, height: 792, color: NAVY_DEEP });
-  cover.drawRectangle({ x: 0, y: 0, width: 18, height: 792, color: TEAL });
-  cover.drawRectangle({ x: 18, y: 0, width: 6, height: 792, color: COPPER });
-  if (logo) {
-    const h = 72;
-    const w = (logo.width / logo.height) * h;
-    cover.drawImage(logo, { x: 48, y: 680, width: w, height: h });
+  cover.drawRectangle({ x: 0, y: 784, width: 612, height: 8, color: COPPER });
+  cover.drawRectangle({ x: 0, y: 776, width: 612, height: 8, color: TEAL });
+  cover.drawRectangle({ x: 0, y: 0, width: 612, height: 8, color: COPPER });
+  cover.drawRectangle({ x: 0, y: 8, width: 612, height: 8, color: TEAL });
+  if (navyLogo) {
+    const h = 36;
+    const w = Math.min(240, (navyLogo.width / navyLogo.height) * h);
+    cover.drawImage(navyLogo, { x: 48, y: 700, width: w, height: h });
   } else {
-    cover.drawText("ZYRAMIC", { x: 48, y: 720, size: 28, font: bold, color: CREAM });
+    cover.drawText("ZYRAMIC", { x: 48, y: 712, size: 28, font: serif, color: CREAM });
   }
-  cover.drawText("PROPOSAL SOFTWARE", { x: 48, y: 640, size: 11, font: bold, color: COPPER });
-  cover.drawText("Budgetary module proposal", { x: 48, y: 610, size: 22, font: bold, color: CREAM });
-  cover.drawText(input.product, { x: 48, y: 578, size: 16, font, color: TEAL });
-  cover.drawText(pdfSafe(input.projectName || "Untitled project"), { x: 48, y: 540, size: 14, font: bold, color: CREAM });
-  cover.drawText(pdfSafe(input.siteLocation || "Site TBD"), { x: 48, y: 520, size: 11, font, color: LINE });
-  if (input.application) cover.drawText(pdfSafe(input.application), { x: 48, y: 504, size: 10, font, color: LINE });
+  cover.drawText("PROPOSAL SOFTWARE", { x: 48, y: 650, size: 11, font: kicker, color: COPPER });
+  cover.drawText("Budgetary module proposal", { x: 48, y: 612, size: 26, font: serif, color: CREAM });
+  cover.drawText(input.product, { x: 48, y: 578, size: 14, font: kicker, color: TEAL });
+  cover.drawText(pdfSafe(input.projectName || "Untitled project"), { x: 48, y: 540, size: 16, font: serif, color: CREAM });
+  cover.drawText(pdfSafe(input.siteLocation || "Site TBD"), { x: 48, y: 518, size: 11, font: kicker, color: LINE });
+  if (input.application) cover.drawText(pdfSafe(input.application), { x: 48, y: 500, size: 10, font: kicker, color: LINE });
 
   const coverNotes = [
     "DRAFT / PRELIMINARY — not a final customer or field issue.",
     "Modules only. Not a complete treatment system.",
-    "Palisade and Swing MBR public names only.",
+    "Public names: Palisade, Swing MBR, Scrub UF, Ceramic. Modules only.",
     input.documentStatus,
     `Model status: ${input.modelStatus}`,
     `Prepared for role: ${input.role}`
@@ -174,7 +196,7 @@ export async function buildProposalPdf(input: ProposalPdfInput): Promise<Uint8Ar
   // 2 Technical
   const tech = doc.addPage(pageSize);
   chrome(tech, "2  -  Technical", 2);
-  let y = 708;
+  let y = 698;
   const left = 36;
   const write = (text: string, size = 9, useBold = false, color = INK) => {
     for (const line of wrap(text, useBold ? bold : font, size, 540)) {
@@ -216,7 +238,7 @@ export async function buildProposalPdf(input: ProposalPdfInput): Promise<Uint8Ar
   chrome(draw, "3  -  Drawings / cut sheets", 3);
   draw.drawText("Published product cut sheets. Do not treat this page as project CAD.", {
     x: left,
-    y: 708,
+    y: 698,
     size: 9,
     font,
     color: MUTED
@@ -265,7 +287,7 @@ export async function buildProposalPdf(input: ProposalPdfInput): Promise<Uint8Ar
   // 4 Price
   const price = doc.addPage(pageSize);
   chrome(price, "4  -  Price", 4);
-  y = 708;
+  y = 698;
   const pwrite = (text: string, size = 9, useBold = false, color = INK) => {
     for (const line of wrap(text, useBold ? bold : font, size, 540)) {
       if (y < 50) return;
@@ -314,7 +336,7 @@ export async function buildProposalPdf(input: ProposalPdfInput): Promise<Uint8Ar
     "7. Confidential. Customer lists, OEM sheets, and live pricing systems are outside this draft.",
     "8. Governing issue. A later signed Zyramic quotation supersedes this PDF."
   ];
-  y = 708;
+  y = 698;
   for (const c of clauses) {
     for (const line of wrap(c, font, 10, 540)) {
       terms.drawText(line, { x: left, y, size: 10, font, color: INK });

@@ -1,5 +1,7 @@
 # CHANGELOG — Alper acceptance baseline (Sep 20, 2026)
 
+Brand kit (Sep 21): official logos + Source Serif 4 / Archivo chrome; public copy locked to Palisade / Swing MBR / Scrub UF / Ceramic modules.
+
 Short Basecamp note: what changed versus the gaps in COMPARISON-Tom.md.
 
 ## Acceptance source

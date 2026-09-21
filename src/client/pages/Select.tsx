@@ -19,7 +19,7 @@ export function SelectPage() {
           <div className="grid-2" style={{ marginTop: "1rem" }}>
             <Link className="product-card" to="/proposal/palisade">
               <h3>Palisade</h3>
-              <p className="muted">Polymer flat-sheet MBR modules with on-board scour. V29 engineering basis: input, sizing, module selection, scour air, CIP boundary, summary, assumptions.</p>
+              <p className="muted">Polymer flat-sheet MBR modules with scour. V29 engineering basis: input, sizing, module selection, scour air, CIP boundary, summary, assumptions.</p>
             </Link>
             <Link className="product-card" to="/proposal/swing">
               <h3>Swing MBR</h3>

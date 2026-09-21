@@ -105,8 +105,10 @@ export function SwingPage() {
       <div className="card">
         <h2>Swing MBR module selection</h2>
         <p className="muted">
-          Modules, not a complete system. Public SKU is SWG-*; engineering view also shows EPS8-* (Alper quote naming).
-          2-wide pack is 300 + 700 + 400 + 700 + 300 = 2400 mm. Budgetary stub $30/m² is flagged STUB/OEM.
+          Modules, not a complete system. Public SKU is SWG-*.
+          {eng ? " Engineering view also shows EPS8-* (Alper quote naming)." : ""}
+          {" "}2-wide pack is 300 + 700 + 400 + 700 + 300 = 2400 mm.
+          {pricing ? " Budgetary stub $30/m² is flagged STUB/OEM." : ""}
         </p>
         <div className="actions" style={{ marginTop: 0 }}>
           <button onClick={() => setInput(arges200)}>Load Arges 200 m³/d</button>
@@ -195,7 +197,10 @@ export function SwingPage() {
         </table>
 
         <h3>Multi-capacity table</h3>
-        <p className="muted">Arges municipal units: 200 → 2 × EPS8-2.5-12 = 750 m²; 500 → 6 × EPS8-2.5-10 = 1875 m².</p>
+        <p className="muted">
+          Arges municipal units: 200 → 2 × {eng ? "EPS8-2.5-12 / " : ""}SWG-8-2.5-12 = 750 m²;
+          500 → 6 × {eng ? "EPS8-2.5-10 / " : ""}SWG-8-2.5-10 = 1875 m².
+        </p>
         <table>
           <thead>
             <tr><th>Flow</th><th>Units</th><th>Area@12</th><th>SKU</th>{eng ? <th>Eng</th> : null}<th>Mods/unit</th><th>Area/unit</th></tr>

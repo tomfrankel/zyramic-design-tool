@@ -14,7 +14,9 @@
   --red: #8b2e2e;
   --green: #1f6b4a;
   --shadow: 0 10px 28px rgba(11, 31, 51, 0.08);
-  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Source Serif 4", "Times New Roman", serif;
+  --font-kicker: Archivo, "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-kicker);
   color: var(--ink);
   background: var(--paper);
 }
@@ -23,21 +25,32 @@
 html, body, #root { margin: 0; min-height: 100%; }
 a { color: inherit; text-decoration: none; }
 button, input, select, textarea { font: inherit; }
+h1, h2, h3 { font-family: var(--font-serif); font-weight: 600; }
 
 .app-shell { min-height: 100vh; display: flex; flex-direction: column; }
 .topbar {
-  background: linear-gradient(90deg, var(--navy-deep), var(--navy));
+  background: var(--navy);
   color: var(--cream);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 1.25rem;
+  padding: 0.75rem 1.25rem 0.65rem;
   gap: 1rem;
   border-bottom: 4px solid var(--copper);
+  box-shadow: inset 0 -8px 0 var(--teal);
 }
 .brand { display: flex; align-items: center; gap: 0.75rem; }
-.brand img { height: 42px; width: auto; background: var(--cream); border-radius: 6px; padding: 4px 8px; }
-.brand h1 { margin: 0; font-size: 1.05rem; letter-spacing: 0.04em; }
+.brand img { height: 36px; width: auto; background: transparent; padding: 0; }
+.brand h1 { margin: 0; font-size: 1.2rem; letter-spacing: 0; }
+.brand .kicker, .kicker {
+  margin: 0;
+  font-family: var(--font-kicker);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--copper);
+  font-weight: 600;
+}
 .brand p { margin: 0; font-size: 0.75rem; color: #d8c7a4; }
 .nav { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .nav a, .role-pill, .ghost, .primary, .danger {
@@ -105,7 +118,7 @@ button:not(.primary):not(.ghost):not(.danger) {
   cursor: pointer;
 }
 .tabs button.active { background: var(--navy); color: var(--cream); border-color: var(--navy); }
-label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 0.2rem; }
+label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 0.2rem; font-family: var(--font-kicker); letter-spacing: 0.02em; }
 .field input, .field select, .field textarea {
   width: 100%;
   border: 1px solid var(--line);
@@ -117,18 +130,20 @@ label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 
 .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem 1rem; }
 table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
 th, td { text-align: left; padding: 0.45rem 0.4rem; border-bottom: 1px solid var(--line); vertical-align: top; }
-th { color: var(--muted); font-weight: 600; }
+th { color: var(--muted); font-weight: 600; font-family: var(--font-kicker); }
 .kpi { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin: 0.75rem 0 1rem; }
 .kpi div { background: var(--white); border: 1px solid var(--line); border-radius: 12px; padding: 0.7rem 0.8rem; }
-.kpi strong { display: block; font-size: 1.15rem; }
+.kpi span { font-family: var(--font-kicker); letter-spacing: 0.04em; text-transform: uppercase; font-size: 0.68rem; }
+.kpi strong { display: block; font-size: 1.15rem; font-family: var(--font-serif); }
 .tag { display: inline-block; font-size: 0.7rem; padding: 0.12rem 0.4rem; border-radius: 999px; background: #dceeee; color: #0a5554; }
 .tag.warn { background: var(--amber-bg); color: #7a5314; }
 .tag.bad { background: #fde8e8; color: var(--red); }
 .tag.ok { background: #e5f6ec; color: var(--green); }
 .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem; }
-.login-wrap { min-height: 100vh; display: grid; place-items: center; background: linear-gradient(160deg, var(--navy-deep), #0b3a3a); }
-.login-card { width: min(520px, calc(100% - 2rem)); }
-.login-card img { height: 54px; }
+.login-wrap { min-height: 100vh; display: grid; place-items: center; background: var(--navy-deep); }
+.login-card { width: min(520px, calc(100% - 2rem)); border-top: 8px solid var(--copper); box-shadow: inset 0 16px 0 var(--teal), var(--shadow); padding-top: 1.6rem; }
+.login-card img { height: 72px; }
+.login-card .kicker { margin-bottom: 0.35rem; }
 .wall {
   border: 1px dashed var(--copper);
   background: #fff8f2;
