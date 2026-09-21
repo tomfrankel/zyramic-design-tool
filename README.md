@@ -1,6 +1,6 @@
 # Zyramic Proposal Software
 
-Draft workspace for **Palisade** and **Swing MBR** module selection, preliminary sizing, a branded 5-page proposal PDF, and a walled commercial zone.
+Draft workspace for **Palisade**, **Swing MBR**, and **Ceramic / SiC** module selection, preliminary sizing, a branded 5-page proposal PDF, and a walled commercial zone.
 
 This is **not** the older “design tool” name. In the UI and in this README the product is **Proposal Software**.
 
@@ -14,6 +14,7 @@ Public copy names **Palisade**, **Swing MBR**, **Scrub UF**, and **Ceramic** (mo
 
 - Sizes **Palisade** from the V29 / Alper Area@12 basis (15 LMH ON × 8/2 → 12 LMH cycle-average).
 - Selects **Swing MBR** with **Alper 12 LMH + 2-wide pack** as the municipal default; industry 0.34 m³/m²/d remains a labeled alternate.
+- Sizes **Ceramic / SiC** as a separate line (not mixed with Palisade/Swing). Municipal WW MBR design flux **60 LMH**. Module SICFS-module42: 746 × 715 × 160 mm, 7.5 m², 44.8 kg dry. Pricing / extra website SKUs HELD.
 - Two zones:
   1. **Sizing** (customer-eligible): selection and sizing. No prices, cost, margin, customer lists, or past quotes.
   2. **Commercial** (sales / engineering / admin): line items, **sell margin %**, customer list, past quotes, Dropbox + HubSpot stubs.
@@ -21,7 +22,7 @@ Public copy names **Palisade**, **Swing MBR**, **Scrub UF**, and **Ceramic** (mo
 - 5-page branded PDF: cover, technical, drawings (catalog cut sheets), price or sizing-only, draft T&Cs.
 - Unknown commercial flags stay visible. Palisade $ is UNKNOWN. Swing $30/m² is a STUB/OEM budgetary flag (Alper Attachment-3). No invented warranty or lead time.
 
-Ceramics are out of scope.
+Ceramic / SiC is a separate stub path. Do not mix it onto a Palisade or Swing proposal.
 
 ## Run it
 
@@ -81,6 +82,15 @@ Copy `.env.example` to `.env` if you want to change keys or adapter stubs. **Nev
 - **Alper 2-wide pack:** 300 + 700 + 400 + 700 + 300 = 2400 mm. Module length along tank length. Prefer 2.5-deck when height allows (~2160 mm in ~3000 mm).
 - Public SKUs `SWG-8-*` / `SWG-9-*`. Engineering SKU `EPS8-*` (Alper naming). Prefer 8-series.
 
+## Ceramic / SiC
+
+- Separate product family. API `product=ceramic_sic`. Public name **Ceramic / SiC**. No supplier brand on customer PDFs.
+- Sheet SICFS-600×145×6-0.177 = 0.177 m², 100 nm. Module SICFS-module42 = 42 sheets, 7.5 m², 746 × 715 × 160 mm, 44.8 kg dry.
+- Design operating flux (municipal WW MBR) = **60 LMH** (engineering, not peak). Capacity ≈ 10.8 m³/d per module. 200 m³/d → 19 modules / 851.2 kg; 108 m³/d → one 10-module tower.
+- Tower: up to 10 modules stacked. Skids custom.
+- Pricing UNKNOWN / held.
+- Source TDS path (eng comments): Dropbox `Proposal Software/01-Source-Reference/Semicorex-SiC/`.
+
 ## Commercial rules
 
 - Sales / engineering must enter **sell margin %**. No invented company default.
@@ -106,6 +116,7 @@ Brand tokens from zyramic.com: `--navy #0B1F33`, `--teal #0E7C7B`, `--copper #C4
 - `/select` product picker
 - `/proposal/palisade`
 - `/proposal/swing`
+- `/proposal/ceramic-sic`
 - `/proposal/commercial` (walled)
 
 ## What is intentionally not in git

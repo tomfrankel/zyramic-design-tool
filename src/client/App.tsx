@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Navigate, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { canAccessZone, canSeePricing } from "../shared/roles";
 import { getRole, logout } from "./lib/api";
+import { CeramicSicPage } from "./pages/CeramicSic";
 import { CommercialPage } from "./pages/Commercial";
 import { LoginPage } from "./pages/Login";
 import { PalisadePage } from "./pages/Palisade";
@@ -20,13 +21,14 @@ function Shell({ children }: { children: ReactNode }) {
           <img src="/brand/logo-bw-white-official.png" alt="Zyramic" />
           <div>
             <h1>Proposal Software</h1>
-            <p className="kicker">Draft workspace · Palisade + Swing MBR modules</p>
+            <p className="kicker">Draft workspace · Palisade + Swing MBR + Ceramic / SiC</p>
           </div>
         </div>
         <nav className="nav">
           <NavLink to="/select">Select</NavLink>
           <NavLink to="/proposal/palisade">Palisade</NavLink>
           <NavLink to="/proposal/swing">Swing MBR</NavLink>
+          <NavLink to="/proposal/ceramic-sic">Ceramic / SiC</NavLink>
           {role && canSeePricing(role) ? <NavLink to="/proposal/commercial">Commercial</NavLink> : null}
         </nav>
         <div className="role-box">
@@ -66,6 +68,7 @@ export function App() {
       <Route path="/proposal" element={<Navigate to="/select" replace />} />
       <Route path="/proposal/palisade" element={<Guard zone="sizing"><PalisadePage /></Guard>} />
       <Route path="/proposal/swing" element={<Guard zone="sizing"><SwingPage /></Guard>} />
+      <Route path="/proposal/ceramic-sic" element={<Guard zone="sizing"><CeramicSicPage /></Guard>} />
       <Route path="/proposal/commercial" element={<Guard zone="commercial"><CommercialPage /></Guard>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

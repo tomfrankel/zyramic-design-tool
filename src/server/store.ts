@@ -11,7 +11,7 @@ export interface CustomerRecord {
 export interface QuoteRecord {
   id: string;
   projectId: string;
-  product: "palisade" | "swing";
+  product: "palisade" | "swing" | "ceramic_sic";
   projectName: string;
   createdAt: string;
   createdByRole: string;

@@ -1,6 +1,6 @@
 import type { Role } from "./roles.js";
 
-export type ProductFamily = "palisade" | "swing";
+export type ProductFamily = "palisade" | "swing" | "ceramic_sic";
 
 export type StatusTag =
   | "CONFIRMED"
@@ -121,6 +121,15 @@ export interface SwingInput {
   packMode?: SwingPackMode;
   preferDeck?: number | "auto";
   trains?: CapacityTrain[];
+}
+
+export type CeramicSicApplication = "municipal_ww_mbr" | "other_held";
+
+export interface CeramicSicInput {
+  projectName?: string;
+  siteLocation?: string;
+  application?: CeramicSicApplication;
+  capacityM3d: number;
 }
 
 export type SwingIndustry =

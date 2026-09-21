@@ -1,7 +1,8 @@
-import { buildHardwareTable } from "./hardware.js";
+import type { CeramicSicResult } from "./ceramicSic.js";
+import { buildHardwareTable, type HardwareTakeoff } from "./hardware.js";
+import { ceramicSicLineItems, palisadeLineItems, swingLineItems, unknownCommercialTerms, type CommercialFlags } from "./lineItems.js";
 import { palisadeCapacityTable, type PalisadeResult } from "./palisade.js";
 import { swingCapacityTable, type SwingResult } from "./swing.js";
-import { palisadeLineItems, swingLineItems, unknownCommercialTerms, type CommercialFlags } from "./lineItems.js";
 import type { CapacityRow, ProposalPdfInput } from "./pdf.js";
 import type { PalisadeInput, SwingInput } from "./types.js";
 
@@ -14,11 +15,11 @@ function withoutBlockedPublicNames<T extends { topic?: string; value?: string; m
 ): T[] {
   return items.filter((item) => {
     const blob = `${item.topic || ""} ${item.value || ""} ${item.message || ""} ${item.action || ""}`;
-    return !/EPS8|EPSMEM|OmniScour|On-Board Scour|Thermo Fisher|Liren|Henry|Qianli|Jiaxing|aeration|diffuser|bubble/i.test(blob);
+    return !/EPS8|EPSMEM|OmniScour|On-Board Scour|Thermo Fisher|Liren|Henry|Qianli|Jiaxing|Semicorex|Amy Zhang|aeration|diffuser|bubble/i.test(blob);
   });
 }
 
-function hardwareSummary(hw: PalisadeResult["sales"]["hardware"] | SwingResult["sales"]["hardware"]) {
+function hardwareSummary(hw: HardwareTakeoff | null | undefined) {
   if (!hw) {
     return [
       { label: "Unit LxWxH", value: "—" },
@@ -183,6 +184,59 @@ export function swingProposal(
     narrative: [
       "Alper flux mode uses 12 LMH cycle-average (same Palisade Area@12). Industry 0.34 m³/m²/d remains an alternate labeled mode.",
       "Prefer 2.5-deck when tank height allows (~2160 mm module in ~3000 mm tank). 2-wide pack is 300+700+400+700+300 mm."
+    ]
+  };
+}
+
+export function ceramicSicProposal(
+  result: CeramicSicResult,
+  opts: {
+    role: string;
+    includePricing: boolean;
+    flags?: CommercialFlags;
+    logoBytes?: Uint8Array | null;
+    headerLogoBytes?: Uint8Array | null;
+  }
+): ProposalPdfInput {
+  const input = result.inputs;
+  const terms = unknownCommercialTerms();
+  const customer = isCustomerRole(opts.role);
+  return {
+    logoBytes: opts.logoBytes,
+    headerLogoBytes: opts.headerLogoBytes,
+    projectName: input.projectName || "Ceramic / SiC draft",
+    siteLocation: input.siteLocation,
+    application: input.application === "municipal_ww_mbr" ? "Municipal WW MBR" : "Application held",
+    product: "Ceramic / SiC",
+    role: opts.role,
+    includePricing: opts.includePricing,
+    sellMarginPct: opts.flags?.sellMarginPct ?? null,
+    modelStatus: result.modelStatus,
+    documentStatus: result.documentStatus,
+    summaryRows: [
+      { label: "SKU", value: String(result.sales.sku ?? "-") },
+      { label: "Modules", value: String(result.sales.moduleCount ?? "-") },
+      { label: "Design operating flux", value: result.sales.fluxLmh != null ? `${result.sales.fluxLmh} LMH` : "UNKNOWN" },
+      { label: "Installed area", value: result.sales.areaM2 != null ? `${result.sales.areaM2.toFixed(1)} m²` : "—" },
+      { label: "Capacity", value: `${result.sales.capacityM3d} m³/d` },
+      { label: "Capacity per module", value: result.sizing.capacityEachM3d != null ? `${result.sizing.capacityEachM3d.toFixed(1)} m³/d` : "—" },
+      ...hardwareSummary(result.sales.hardware),
+      { label: "Tower / stack", value: result.sizing.stackNote }
+    ],
+    hardwareTable: result.sales.hardware ? buildHardwareTable([result.sales.hardware], opts.role) : undefined,
+    assumptions: customer ? withoutBlockedPublicNames(result.assumptions) : result.assumptions,
+    warnings: (customer ? withoutBlockedPublicNames(result.warnings) : result.warnings).map((w) => w.message),
+    missingFields: result.missingFields,
+    lineItems: opts.includePricing ? ceramicSicLineItems(result, opts.flags) : undefined,
+    commercialTerms: opts.includePricing
+      ? { warranty: terms.warranty.note, leadTime: terms.leadTime.note }
+      : undefined,
+    narrative: [
+      "Ceramic / SiC is a separate product line. Do not mix with Palisade or Swing on this page.",
+      "Municipal WW MBR design operating flux is 60 LMH (engineering). Peak pure-water flux is not used for module count.",
+      customer
+        ? "Module dims and uncrated dry weight are from the product TDS. Pricing is omitted on this sizing issue."
+        : "Source TDS is filed under Dropbox Proposal Software/01-Source-Reference/Semicorex-SiC/."
     ]
   };
 }

@@ -45,7 +45,7 @@ describe("5-page branded proposal PDF", () => {
     expect(input.includePricing).toBe(false);
     expect(input.lineItems).toBeUndefined();
     const publicBlob = JSON.stringify(input);
-    expect(publicBlob).not.toMatch(/EPS8|EPSMEM|OmniScour|On-Board Scour|Thermo Fisher|Liren|Henry|Qianli|Jiaxing|aeration|diffuser|bubble/i);
+    expect(publicBlob).not.toMatch(/EPS8|EPSMEM|OmniScour|On-Board Scour|Thermo Fisher|Liren|Henry|Qianli|Jiaxing|Semicorex|Amy Zhang|aeration|diffuser|bubble/i);
     expect(input.summaryRows.some((r) => r.label === "Engineering SKU")).toBe(false);
     expect(input.hardwareTable?.rows[0]?.sku).toBe("SWG-8-2.5-12");
     expect(input.hardwareTable?.rows[0]?.unitWeightKg).toMatch(/542\.4/);

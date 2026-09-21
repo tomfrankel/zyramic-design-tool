@@ -1,11 +1,12 @@
 import { screenPalisadeCip, type CipInput } from "../../shared/cip";
 import { newId } from "../../shared/id";
-import { palisadeLineItems, swingLineItems, unknownCommercialTerms } from "../../shared/lineItems";
+import { sizeCeramicSic } from "../../shared/ceramicSic";
+import { ceramicSicLineItems, palisadeLineItems, swingLineItems, unknownCommercialTerms } from "../../shared/lineItems";
 import { sizePalisade } from "../../shared/palisade";
 import { buildProposalPdf, type ProposalPdfInput } from "../../shared/pdf";
 import { canSeePricing, isRole, type Role } from "../../shared/roles";
 import { sizeSwing } from "../../shared/swing";
-import type { PalisadeInput, SwingInput } from "../../shared/types";
+import type { CeramicSicInput, PalisadeInput, ProductFamily, SwingInput } from "../../shared/types";
 
 const ROLE_KEY = "zy_role";
 
@@ -74,12 +75,17 @@ export async function sizeSwingApi(input: SwingInput) {
   return jsonResult(res, () => sizeSwing(input));
 }
 
+export async function sizeCeramicSicApi(input: CeramicSicInput) {
+  const res = await tryFetch("/api/sizing/ceramic_sic", json(input));
+  return jsonResult(res, () => sizeCeramicSic(input));
+}
+
 export async function cipApi(input: CipInput) {
   const res = await tryFetch("/api/sizing/palisade/cip", json(input));
   return jsonResult(res, () => screenPalisadeCip(input));
 }
 
-export async function priceApi(product: "palisade" | "swing", input: unknown, sellMarginPct?: number | null) {
+export async function priceApi(product: ProductFamily, input: unknown, sellMarginPct?: number | null) {
   const role = getRole();
   if (!role || !canSeePricing(role)) {
     const err = new Error("Commercial zone is walled to sales, engineering, and admin.");
@@ -93,6 +99,9 @@ export async function priceApi(product: "palisade" | "swing", input: unknown, se
   const flags = { sellMarginPct: sellMarginPct ?? null };
   if (product === "palisade") {
     return { lineItems: palisadeLineItems(sizePalisade(input as PalisadeInput), flags), terms: unknownCommercialTerms() };
+  }
+  if (product === "ceramic_sic") {
+    return { lineItems: ceramicSicLineItems(sizeCeramicSic(input as CeramicSicInput), flags), terms: unknownCommercialTerms() };
   }
   return { lineItems: swingLineItems(sizeSwing(input as SwingInput), flags), terms: unknownCommercialTerms() };
 }
@@ -139,7 +148,7 @@ export async function listQuotes() {
 }
 
 export async function persistQuote(payload: {
-  product: "palisade" | "swing";
+  product: ProductFamily;
   projectName: string;
   rfq: unknown;
   selection: unknown;

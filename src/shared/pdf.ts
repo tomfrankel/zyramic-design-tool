@@ -35,7 +35,7 @@ export interface ProposalPdfInput {
   projectName: string;
   siteLocation?: string;
   application?: string;
-  product: "Palisade" | "Swing MBR";
+  product: "Palisade" | "Swing MBR" | "Ceramic / SiC";
   role: string;
   includePricing: boolean;
   sellMarginPct?: number | null;
@@ -185,7 +185,7 @@ export async function buildProposalPdf(input: ProposalPdfInput): Promise<Uint8Ar
   const coverNotes = [
     "DRAFT / PRELIMINARY — not a final customer or field issue.",
     "Modules only. Not a complete treatment system.",
-    "Public names: Palisade, Swing MBR, Scrub UF, Ceramic. Modules only.",
+    "Public names: Palisade, Swing MBR, Scrub UF, Ceramic / SiC. Modules only.",
     input.documentStatus,
     `Model status: ${input.modelStatus}`,
     `Prepared for role: ${input.role}`

@@ -1,3 +1,4 @@
+import type { CeramicSicResult } from "./ceramicSic.js";
 import type { LineItem } from "./types.js";
 import type { PalisadeResult } from "./palisade.js";
 import type { SwingResult } from "./swing.js";
@@ -149,6 +150,36 @@ export function swingLineItems(result: SwingResult, flags: CommercialFlags = {})
     });
   }
 
+  return items.map((i) => withMargin(i, flags.sellMarginPct ?? null));
+}
+
+export function ceramicSicLineItems(result: CeramicSicResult, flags: CommercialFlags = {}): LineItem[] {
+  const sku = result.sales.sku;
+  const qty = result.sales.moduleCount ?? 0;
+  const items: LineItem[] = [
+    {
+      sku,
+      description: "Ceramic / SiC module",
+      qty,
+      unit: "module",
+      unitPrice: null,
+      extendedPrice: null,
+      flag: "UNKNOWN",
+      note: "Ceramic / SiC list price HELD / UNKNOWN. Do not invent a website SKU price.",
+      commercialOnly: true
+    },
+    {
+      sku: "LABOR-INSTALL",
+      description: "Installation / field labor",
+      qty: 1,
+      unit: "lot",
+      unitPrice: null,
+      extendedPrice: null,
+      flag: "TBD",
+      note: "Labor TBD. Do not invent a man-hour or crew rate.",
+      commercialOnly: true
+    }
+  ];
   return items.map((i) => withMargin(i, flags.sellMarginPct ?? null));
 }
 

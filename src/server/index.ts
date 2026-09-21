@@ -5,10 +5,11 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { screenPalisadeCip } from "../shared/cip.js";
 import { newId } from "../shared/id.js";
-import { ALPER_SWING_BUDGETARY_USD_PER_M2, palisadeLineItems, swingLineItems, unknownCommercialTerms } from "../shared/lineItems.js";
+import { sizeCeramicSic } from "../shared/ceramicSic.js";
+import { ALPER_SWING_BUDGETARY_USD_PER_M2, ceramicSicLineItems, palisadeLineItems, swingLineItems, unknownCommercialTerms } from "../shared/lineItems.js";
 import { sizePalisade } from "../shared/palisade.js";
 import { buildProposalPdf } from "../shared/pdf.js";
-import { palisadeProposal, swingProposal } from "../shared/proposal.js";
+import { ceramicSicProposal, palisadeProposal, swingProposal } from "../shared/proposal.js";
 import { canSeePricing, isRole } from "../shared/roles.js";
 import { sizeSwing } from "../shared/swing.js";
 import { persistOrderFolder } from "./adapters/dropbox.js";
@@ -59,7 +60,7 @@ app.get("/api/health", (_req, res) => {
     name: "Zyramic Proposal Software",
     status: "draft",
     zones: ["sizing", "commercial"],
-    products: ["Palisade", "Swing MBR"]
+    products: ["Palisade", "Swing MBR", "Ceramic / SiC"]
   });
 });
 
@@ -103,6 +104,11 @@ app.post("/api/sizing/palisade/cip", requireRole, (req: AuthedRequest, res) => {
 
 app.post("/api/sizing/swing", requireRole, (req: AuthedRequest, res) => {
   const result = sizeSwing(req.body || {});
+  res.json({ zone: "sizing", role: req.role, result });
+});
+
+app.post("/api/sizing/ceramic_sic", requireRole, (req: AuthedRequest, res) => {
+  const result = sizeCeramicSic(req.body || {});
   res.json({ zone: "sizing", role: req.role, result });
 });
 
@@ -166,11 +172,26 @@ app.post("/api/commercial/price", requireRole, requireZone("commercial"), (req: 
     });
     return;
   }
-  res.status(400).json({ error: "product must be palisade or swing" });
+  if (product === "ceramic_sic") {
+    const result = sizeCeramicSic(req.body?.input || {});
+    res.json({
+      zone: "commercial",
+      lineItems: ceramicSicLineItems(result, flags),
+      terms: unknownCommercialTerms(),
+      sellMarginPct: flags.sellMarginPct
+    });
+    return;
+  }
+  res.status(400).json({ error: "product must be palisade, swing, or ceramic_sic" });
 });
 
 app.post("/api/commercial/persist", requireRole, requireZone("commercial"), async (req: AuthedRequest, res) => {
-  const product = req.body?.product === "swing" ? "swing" : "palisade";
+  const product =
+    req.body?.product === "swing"
+      ? "swing"
+      : req.body?.product === "ceramic_sic"
+        ? "ceramic_sic"
+        : "palisade";
   const projectId = String(req.body?.projectId || newId("PRJ"));
   const projectName = String(req.body?.projectName || "Untitled project");
   const rfq = req.body?.rfq || {};
@@ -214,7 +235,8 @@ app.post("/api/commercial/proposal.pdf", requireRole, requireZone("commercial"),
 });
 
 async function makePdf(body: Record<string, unknown>, role: string, includePricing: boolean) {
-  const product = body.product === "swing" ? "swing" : "palisade";
+  const product =
+    body.product === "swing" ? "swing" : body.product === "ceramic_sic" ? "ceramic_sic" : "palisade";
   const flags = oemFlag(typeof body.sellMarginPct === "number" ? body.sellMarginPct : null);
   const brand = {
     logoBytes: logoBytes(),
@@ -229,6 +251,18 @@ async function makePdf(body: Record<string, unknown>, role: string, includePrici
         flags,
         ...brand,
         cutsheetBytes: readPublic("catalog/palisade-cutsheet.pdf")
+      }),
+      ...brandFonts()
+    });
+  }
+  if (product === "ceramic_sic") {
+    const result = sizeCeramicSic((body.input as never) || {});
+    return buildProposalPdf({
+      ...ceramicSicProposal(result, {
+        role,
+        includePricing,
+        flags,
+        ...brand
       }),
       ...brandFonts()
     });
