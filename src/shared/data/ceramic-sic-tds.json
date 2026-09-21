@@ -1,0 +1,37 @@
+{
+  "apiProduct": "ceramic_sic",
+  "publicName": "Ceramic / SiC",
+  "documentStatus": "PRELIMINARY — TDS SIZING STUB. Pricing and full website SKUs HELD / UNKNOWN.",
+  "publicSource": "Ceramic / SiC module envelope and uncrated dry weight from the product TDS. Design operating flux is municipal WW MBR engineering flux, not peak pure-water flux.",
+  "engSource": "SiC flat-sheet TDS extract (2026-09-21). Filed: Dropbox Proposal Software/01-Source-Reference/Semicorex-SiC/. Website SKUs and list price HELD.",
+  "sheet": {
+    "sku": "SICFS-600x145x6-0.177",
+    "lengthMm": 600,
+    "widthMm": 145,
+    "thicknessMm": 6,
+    "areaM2": 0.177,
+    "poreNm": 100
+  },
+  "module": {
+    "sku": "SICFS-module42",
+    "lengthMm": 746,
+    "widthMm": 715,
+    "heightMm": 160,
+    "sheets": 42,
+    "areaM2": 7.5,
+    "uncratedDryWeightKg": 44.8,
+    "housing": "NORYL 30% GF PPE/PS",
+    "sheetSpacingMm": 8,
+    "sheetSpacingAdjMm": [8, 36],
+    "maxSuctionBar": -0.6,
+    "maxBackwashBar": 1.2,
+    "tempC": [5, 45]
+  },
+  "tower": {
+    "maxModulesStacked": 10,
+    "skids": "custom"
+  },
+  "designOperatingFluxLmh": {
+    "municipal_ww_mbr": 60
+  }
+}

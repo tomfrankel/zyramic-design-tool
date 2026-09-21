@@ -1,0 +1,16 @@
+node_modules/
+dist/
+data/*.json
+!data/.gitkeep
+.env
+.herenow/
+*.log
+.DS_Store
+coverage/
+uploads/
+*.xlsx
+*.xls
+oem/
+price-sheets/
+customers/
+secrets/

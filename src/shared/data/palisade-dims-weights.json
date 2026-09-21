@@ -1,0 +1,30 @@
+{
+  "publicSource": "Palisade dry weight is UNKNOWN pending catalog update. Dimensions are from the published engineering basis. Do not treat a conventional catalog equivalent as Palisade fab weight.",
+  "engSource": "Palisade dims: Alper V29 / Engineering Basis (plate 1047 x 502 x 7.6 mm, channel 6.4 mm, DN65). 260 envelope 2.12 x 0.96 x 3.05 m CONFIRMED. 130 envelope UNKNOWN — do not invent by halving. Dry weight: UNKNOWN — pending Muse catalog handoff from Tom. Do not publish conventional-equivalent scaled kilograms as Palisade weight.",
+  "pendingCatalogHandoff": "TODO: replace Palisade unitDryWeightKg / weightStatus from Tom's Muse-updated catalog file. Same file may also unify Swing weights. Until then weight stays UNKNOWN.",
+  "plateMm": {
+    "height": 1047,
+    "width": 502,
+    "thickness": 7.6,
+    "channelGap": 6.4
+  },
+  "connections": "2.5 in Sch 40 / DN65",
+  "modules": {
+    "PAL-130": {
+      "areaM2": 136.5,
+      "envelopeM": null,
+      "envelopeStatus": "UNKNOWN",
+      "envelopeNote": "Do not derive 130 envelope by halving 260; project CAD governs.",
+      "unitDryWeightKg": null,
+      "weightStatus": "UNKNOWN"
+    },
+    "PAL-260": {
+      "areaM2": 273,
+      "envelopeM": [2.12, 0.96, 3.05],
+      "envelopeStatus": "CONFIRMED",
+      "envelopeNote": "Published 260-module envelope 2.12 x 0.96 x 3.05 m.",
+      "unitDryWeightKg": null,
+      "weightStatus": "UNKNOWN"
+    }
+  }
+}
