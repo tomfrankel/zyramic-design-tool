@@ -55,7 +55,7 @@ Copy `.env.example` to `.env` if you want to change keys or adapter stubs. **Nev
    - TCF is shown as check-only; module count stays 6
    - Selecting PAL-260 is blocked and falls back to 130
    - Capacity tab: 100/150/200/500/600 → 3/4/6/13/16 × PAL-130
-   - PAL-130 envelope **UNKNOWN**; 273 kg unit / 1,638 kg total **REFERENCE**. PAL-260 envelope 2.12 × 0.96 × 3.05 m **CONFIRMED**; 546 kg **REFERENCE** (not Palisade fab weight)
+   - PAL-130 envelope **UNKNOWN**; PAL-260 envelope 2.12 × 0.96 × 3.05 m **CONFIRMED**. Palisade dry weight is **UNKNOWN** pending Muse catalog handoff.
 3. **Swing MBR** — page loads Alper 12 LMH + 2-wide, tank 12760 × 2400 × 3000 mm. Confirm:
    - 200 m³/d → **2 × SWG-8-2.5-12 / EPS8-2.5-12 = 750 m²**, 3300 × 700 × 2160 mm, 542.4 kg unit / 1,084.8 kg total **ESTIMATED**
    - 500 m³/d → **6 × SWG-8-2.5-10 / EPS8-2.5-10 = 1875 m²**, 452 kg unit / 2,712 kg total **CONFIRMED**

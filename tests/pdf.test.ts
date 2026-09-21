@@ -67,11 +67,12 @@ describe("5-page branded proposal PDF", () => {
     });
     const input = palisadeProposal(result, { role: "engineering", includePricing: false });
     expect(input.hardwareTable?.rows[0]?.sku).toBe("PAL-130");
-    expect(input.hardwareTable?.rows[0]?.unitWeightKg).toMatch(/273/);
-    expect(input.hardwareTable?.rows[0]?.totalWeightKg).toMatch(/1638/);
-    expect(input.hardwareTable?.rows[0]?.weightFlag).toBe("REFERENCE");
+    expect(input.hardwareTable?.rows[0]?.unitWeightKg).toMatch(/UNKNOWN/);
+    expect(input.hardwareTable?.rows[0]?.totalWeightKg).toMatch(/UNKNOWN/);
+    expect(input.hardwareTable?.rows[0]?.weightFlag).toBe("UNKNOWN");
     expect(input.hardwareTable?.rows[0]?.unitDims).toMatch(/UNKNOWN/);
-    expect(input.hardwareTable?.footnote).toMatch(/ZY-MBR150-S|catalog equivalent|Not weighed Palisade/i);
+    expect(input.hardwareTable?.footnote).toMatch(/pending catalog update|UNKNOWN/i);
+    expect(JSON.stringify(input.hardwareTable)).not.toMatch(/273 kg|546 kg|Qianli|ZY-MBR150-S/i);
     const bytes = await buildProposalPdf(input);
     const doc = await PDFDocument.load(bytes);
     expect(doc.getPageCount()).toBe(5);

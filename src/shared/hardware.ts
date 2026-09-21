@@ -1,6 +1,8 @@
 import palisadeWeights from "./data/palisade-dims-weights.json";
 import swingWeights from "./data/swing-dims-weights.json";
 
+/** TODO(muse-catalog): Palisade dry kg stays UNKNOWN until Tom hands the Muse-updated catalog. Plumbing already reads unitDryWeightKg from that JSON. */
+
 export type HardwareFlag = "CONFIRMED" | "ESTIMATED" | "REFERENCE" | "UNKNOWN";
 
 export interface HardwarePack {

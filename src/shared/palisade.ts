@@ -21,8 +21,8 @@ export const PALISADE_BASIS = {
       permeateGuidanceHighGpm: 12.6,
       envelopeM: null as [number, number, number] | null,
       envelopeStatus: "UNKNOWN" as const,
-      unitDryWeightKg: 273,
-      weightStatus: "REFERENCE" as const
+      unitDryWeightKg: null as number | null,
+      weightStatus: "UNKNOWN" as const
     },
     260: {
       sku: "PAL-260",
@@ -33,8 +33,8 @@ export const PALISADE_BASIS = {
       permeateGuidanceHighGpm: 25.2,
       envelopeM: [2.12, 0.96, 3.05] as [number, number, number],
       envelopeStatus: "CONFIRMED" as const,
-      unitDryWeightKg: 546,
-      weightStatus: "REFERENCE" as const
+      unitDryWeightKg: null as number | null,
+      weightStatus: "UNKNOWN" as const
     }
   },
   specificScourScfmPerM2: 0.35,
@@ -295,7 +295,7 @@ export function sizePalisade(input: PalisadeInput) {
     { id: "modules", label: "Module count", value: selected?.moduleCount ?? null, unit: "modules", status: "CALCULATED" },
     { id: "installed", label: "Installed membrane area", value: selected?.installedAreaM2 ?? null, unit: "m²", status: "CALCULATED" },
     { id: "unit_dims", label: "Unit L×W×H", value: selected?.hardware.unitDims ?? null, status: selected?.hardware.dimsStatus ?? "UNKNOWN" },
-    { id: "unit_dry_kg", label: "Unit dry weight", value: selected?.hardware.unitDryWeightKg ?? null, unit: "kg", status: selected?.hardware.weightStatus ?? "UNKNOWN", note: "Catalog reference — not Palisade fab weight." },
+    { id: "unit_dry_kg", label: "Unit dry weight", value: selected?.hardware.unitDryWeightKg ?? null, unit: "kg", status: selected?.hardware.weightStatus ?? "UNKNOWN", note: "UNKNOWN pending catalog update." },
     { id: "total_dry_kg", label: "Total installed dry weight", value: selected?.hardware.totalDryWeightKg ?? null, unit: "kg", status: selected?.hardware.weightStatus ?? "UNKNOWN", note: "Unit dry weight × quantity." },
     { id: "scour", label: "Total scour air", value: totalScourScfm, unit: "SCFM", status: "CALCULATED" },
     { id: "scour_si", label: "Total scour air", value: totalScourSm3h, unit: "standard m³/h", status: "CALCULATED" }

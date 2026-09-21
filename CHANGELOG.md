@@ -1,6 +1,6 @@
 # CHANGELOG — Alper acceptance baseline (Sep 20, 2026)
 
-Dims + uncrated dry weights on sizing UI, API JSON, and PDF technical takeoff (Swing OEM sheet; Palisade catalog reference — not fab weight). ESTIMATED / REFERENCE / UNKNOWN flags; customer sees facts without supplier names or $.
+Dims + uncrated dry weights on sizing UI, API JSON, and PDF technical takeoff. Swing uses the OEM module weight sheet (incl. EPS8-2.5-12 ESTIMATED). Palisade weights UNKNOWN pending Muse catalog handoff — do not publish conventional-equivalent kilograms.
 
 Brand kit (Sep 21): official logos + Source Serif 4 / Archivo chrome; public copy locked to Palisade / Swing MBR / Scrub UF / Ceramic modules.
 

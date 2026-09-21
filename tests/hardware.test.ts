@@ -24,12 +24,13 @@ describe("hardware catalog merge", () => {
     const pal260 = palisadeHardware("PAL-260", 1);
     expect(pal130.unitDims).toBe("UNKNOWN");
     expect(pal130.dimsStatus).toBe("UNKNOWN");
-    expect(pal130.unitDryWeightKg).toBe(273);
-    expect(pal130.totalDryWeightKg).toBe(1638);
-    expect(pal130.weightStatus).toBe("REFERENCE");
+    expect(pal130.unitDryWeightKg).toBeNull();
+    expect(pal130.totalDryWeightKg).toBeNull();
+    expect(pal130.weightStatus).toBe("UNKNOWN");
     expect(pal260.unitDims).toBe("2.12 x 0.96 x 3.05 m");
     expect(pal260.dimsStatus).toBe("CONFIRMED");
-    expect(pal260.unitDryWeightKg).toBe(546);
-    expect(pal130.publicNote).not.toMatch(/Qianli|Henry|Liren/i);
+    expect(pal260.unitDryWeightKg).toBeNull();
+    expect(pal130.publicNote).toMatch(/pending catalog update/i);
+    expect(pal130.publicNote).not.toMatch(/Qianli|Henry|Liren|273|546/i);
   });
 });

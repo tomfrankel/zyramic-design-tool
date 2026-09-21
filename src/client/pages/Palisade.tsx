@@ -139,7 +139,7 @@ export function PalisadePage() {
           </div>
           <div>
             <span className="muted">Weight basis</span>
-            <strong>Catalog reference</strong>
+            <strong>Pending catalog update</strong>
             <div className="muted">{eng ? (result.sales.hardware?.engNote ?? "") : (result.sales.hardware?.publicNote ?? "")}</div>
           </div>
         </div>

@@ -70,16 +70,16 @@ describe("Alper Palisade acceptance", () => {
     expect(result.selectedModule?.moduleCount).toBe(6);
     expect(pal130?.hardware.unitDims).toBe("UNKNOWN");
     expect(pal130?.hardware.dimsStatus).toBe("UNKNOWN");
-    expect(pal130?.hardware.unitDryWeightKg).toBe(273);
-    expect(pal130?.hardware.totalDryWeightKg).toBe(1638);
-    expect(pal130?.hardware.weightStatus).toBe("REFERENCE");
+    expect(pal130?.hardware.unitDryWeightKg).toBeNull();
+    expect(pal130?.hardware.totalDryWeightKg).toBeNull();
+    expect(pal130?.hardware.weightStatus).toBe("UNKNOWN");
     expect(pal130?.envelopeM).toBeNull();
     expect(pal260?.hardware.unitDims).toBe("2.12 x 0.96 x 3.05 m");
     expect(pal260?.hardware.dimsStatus).toBe("CONFIRMED");
-    expect(pal260?.hardware.unitDryWeightKg).toBe(546);
-    expect(pal260?.hardware.weightStatus).toBe("REFERENCE");
-    expect(result.sales.hardware?.publicNote).toMatch(/Catalog reference/i);
-    expect(result.sales.hardware?.publicNote).not.toMatch(/Qianli|Liren|Henry/i);
+    expect(pal260?.hardware.unitDryWeightKg).toBeNull();
+    expect(pal260?.hardware.weightStatus).toBe("UNKNOWN");
+    expect(result.sales.hardware?.publicNote).toMatch(/pending catalog update/i);
+    expect(result.sales.hardware?.publicNote).not.toMatch(/Qianli|273|546/i);
   });
 });
 
