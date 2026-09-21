@@ -1,0 +1,53 @@
+{
+  "publicSource": "Catalog reference — not Palisade fab weight until Zyramic weighs hardware.",
+  "engSource": "Palisade dims: Alper V29 / Engineering Basis. Weights: conventional catalog equivalent ZY-MBR150-S 300 kg @ 150 m2 and ZY-MBR300-D 600 kg @ 300 m2, area-scaled to 273 / 546 kg. Not weighed Palisade hardware.",
+  "plateMm": {
+    "height": 1047,
+    "width": 502,
+    "thickness": 7.6,
+    "channelGap": 6.4
+  },
+  "connections": "2.5 in Sch 40 / DN65",
+  "modules": {
+    "PAL-130": {
+      "areaM2": 136.5,
+      "envelopeM": null,
+      "envelopeStatus": "UNKNOWN",
+      "envelopeNote": "Do not derive 130 envelope by halving 260; project CAD governs.",
+      "unitDryWeightKg": 273,
+      "weightStatus": "REFERENCE",
+      "catalogRef": {
+        "sku": "ZY-MBR150-S",
+        "areaM2": 150,
+        "dryKg": 300,
+        "dimsMm": [
+          2000,
+          630,
+          1800
+        ]
+      }
+    },
+    "PAL-260": {
+      "areaM2": 273,
+      "envelopeM": [
+        2.12,
+        0.96,
+        3.05
+      ],
+      "envelopeStatus": "CONFIRMED",
+      "envelopeNote": "Published 260-module envelope 2.12 x 0.96 x 3.05 m.",
+      "unitDryWeightKg": 546,
+      "weightStatus": "REFERENCE",
+      "catalogRef": {
+        "sku": "ZY-MBR300-D",
+        "areaM2": 300,
+        "dryKg": 600,
+        "dimsMm": [
+          2000,
+          630,
+          3200
+        ]
+      }
+    }
+  }
+}

@@ -55,9 +55,10 @@ Copy `.env.example` to `.env` if you want to change keys or adapter stubs. **Nev
    - TCF is shown as check-only; module count stays 6
    - Selecting PAL-260 is blocked and falls back to 130
    - Capacity tab: 100/150/200/500/600 → 3/4/6/13/16 × PAL-130
+   - PAL-130 envelope **UNKNOWN**; 273 kg unit / 1,638 kg total **REFERENCE**. PAL-260 envelope 2.12 × 0.96 × 3.05 m **CONFIRMED**; 546 kg **REFERENCE** (not Palisade fab weight)
 3. **Swing MBR** — page loads Alper 12 LMH + 2-wide, tank 12760 × 2400 × 3000 mm. Confirm:
-   - 200 m³/d → **2 × SWG-8-2.5-12 / EPS8-2.5-12 = 750 m²**
-   - 500 m³/d → **6 × SWG-8-2.5-10 / EPS8-2.5-10 = 1875 m²**
+   - 200 m³/d → **2 × SWG-8-2.5-12 / EPS8-2.5-12 = 750 m²**, 3300 × 700 × 2160 mm, 542.4 kg unit / 1,084.8 kg total **ESTIMATED**
+   - 500 m³/d → **6 × SWG-8-2.5-10 / EPS8-2.5-10 = 1875 m²**, 452 kg unit / 2,712 kg total **CONFIRMED**
 4. Enter a **sell margin %** (required; no default). Download the 5-page commercial PDF. Price page shows stub + sell overlay.
 5. Sign out, sign in as **customer** / `customer`. Same sizing. Commercial nav is hidden. PDF has no $ / cost / margin.
 
@@ -92,7 +93,7 @@ Copy `.env.example` to `.env` if you want to change keys or adapter stubs. **Nev
 ## Proposal PDF (five pages)
 
 1. Cover
-2. Technical (sizing / process / warranty / multi-capacity table)
+2. Technical (sizing / process / warranty / multi-capacity table / hardware takeoff: SKU, qty, unit L×W×H, unit kg, total kg)
 3. Drawings — embedded catalog cut sheets (not project CAD). Optional Swing shipping-height figure.
 4. Price — line items + sell margin for sales/eng; customer gets sizing-only / no $
 5. Draft modular terms (budgetary / modules only / warranty envelope)

@@ -1,3 +1,5 @@
+import { swingModuleHardware, type HardwareFlag } from "./hardware.js";
+
 export interface SwingModuleSpec {
   sku: string;
   series: "8" | "9";
@@ -11,6 +13,19 @@ export interface SwingModuleSpec {
   airDn: string;
   scourAirM3h: number;
   municipalCapacityM3d: number;
+  uncratedDryWeightKg?: number | null;
+  weightStatus?: HardwareFlag;
+  dimsStatus?: HardwareFlag;
+}
+
+export function withSwingHardware(spec: SwingModuleSpec): SwingModuleSpec {
+  const hw = swingModuleHardware(spec.sku);
+  return {
+    ...spec,
+    uncratedDryWeightKg: hw.uncratedDryWeightKg,
+    weightStatus: hw.weightStatus,
+    dimsStatus: hw.dimsStatus
+  };
 }
 
 /** Engineering SKU as used in Alper's quote (EPS8-*). Public alias is SWG-*. */
@@ -22,8 +37,8 @@ export function publicSku(spec: Pick<SwingModuleSpec, "series" | "decks" | "colu
   return `SWG-${spec.series}-${spec.decks}-${spec.columns}`;
 }
 
-/** Public Swing SKUs. Geometry and scour values come from the Swing design-tool Database sheet. */
-export const SWING_MODULES: SwingModuleSpec[] = [
+/** Public Swing SKUs. Geometry from the Swing design-tool Database sheet; dry weights from the OEM module weight sheet. */
+const SWING_MODULE_ROWS: SwingModuleSpec[] = [
   { sku: "SWG-8-0.5-1", series: "8", decks: 0.5, columns: 1, areaM2: 6.25, lengthMm: 500, widthMm: 700, heightMm: 900, filtrateDn: "DN15", airDn: "DN25", scourAirM3h: 10, municipalCapacityM3d: 2.1875 },
   { sku: "SWG-8-1-1", series: "8", decks: 1, columns: 1, areaM2: 12.5, lengthMm: 500, widthMm: 700, heightMm: 1230, filtrateDn: "DN25", airDn: "DN25", scourAirM3h: 10, municipalCapacityM3d: 4.375 },
   { sku: "SWG-8-1-2", series: "8", decks: 1, columns: 2, areaM2: 25, lengthMm: 750, widthMm: 700, heightMm: 1230, filtrateDn: "DN32", airDn: "DN32", scourAirM3h: 20, municipalCapacityM3d: 8.75 },
@@ -97,6 +112,8 @@ export const SWING_MODULES: SwingModuleSpec[] = [
   { sku: "SWG-9-3-9", series: "9", decks: 3, columns: 9, areaM2: 621, lengthMm: 2550, widthMm: 1100, heightMm: 2430, filtrateDn: "DN65", airDn: "DN80", scourAirM3h: 248.4, municipalCapacityM3d: 217.35 },
   { sku: "SWG-9-3-10", series: "9", decks: 3, columns: 10, areaM2: 690, lengthMm: 2800, widthMm: 1100, heightMm: 2430, filtrateDn: "DN65", airDn: "DN80", scourAirM3h: 276, municipalCapacityM3d: 241.5 }
 ];
+
+export const SWING_MODULES: SwingModuleSpec[] = SWING_MODULE_ROWS.map(withSwingHardware);
 
 export const SWING_INDUSTRY_FLUX_M3_M2_D: Record<string, number> = {
   "Domestic and Municipal": 0.34,

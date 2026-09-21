@@ -42,6 +42,18 @@ export interface ProposalPdfInput {
   modelStatus: string;
   documentStatus: string;
   summaryRows: { label: string; value: string }[];
+  hardwareTable?: {
+    rows: {
+      sku: string;
+      qty: number;
+      unitDims: string;
+      dimsFlag: string;
+      unitWeightKg: string;
+      weightFlag: string;
+      totalWeightKg: string;
+    }[];
+    footnote: string;
+  };
   capacityTable?: CapacityRow[];
   assumptions: { id: string; topic: string; value: string; status: string }[];
   warnings: string[];
@@ -208,7 +220,19 @@ export async function buildProposalPdf(input: ProposalPdfInput): Promise<Uint8Ar
   write("PRELIMINARY engineering basis. Sizing uses Area@12 = Q / 12 LMH cycle-average unless an alternate Swing industry map is selected.", 9, false, MUTED);
   y -= 4;
   write("Project summary", 12, true, TEAL);
-  for (const row of input.summaryRows.slice(0, 12)) write(`${row.label}: ${row.value}`, 9);
+  for (const row of input.summaryRows.slice(0, 14)) write(`${row.label}: ${row.value}`, 9);
+  if (input.hardwareTable?.rows.length) {
+    y -= 6;
+    write("Hardware takeoff (uncrated dry)", 12, true, TEAL);
+    write("SKU   Qty   Unit LxWxH   Dims flag   Unit kg   Weight flag   Total kg", 8, true, MUTED);
+    for (const r of input.hardwareTable.rows) {
+      write(
+        `${r.sku}   ${r.qty}   ${r.unitDims}   ${r.dimsFlag}   ${r.unitWeightKg}   ${r.weightFlag}   ${r.totalWeightKg}`,
+        8
+      );
+    }
+    if (input.hardwareTable.footnote) write(input.hardwareTable.footnote, 8, false, MUTED);
+  }
   if (input.narrative?.length) {
     y -= 6;
     write("Engineering notes", 12, true, TEAL);

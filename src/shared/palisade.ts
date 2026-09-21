@@ -1,3 +1,4 @@
+import { palisadeHardware } from "./hardware.js";
 import type {
   AssumptionItem,
   FieldNote,
@@ -18,7 +19,10 @@ export const PALISADE_BASIS = {
       scourScfm: 48,
       permeateGuidanceLowGpm: 7.5,
       permeateGuidanceHighGpm: 12.6,
-      envelopeM: null as [number, number, number] | null
+      envelopeM: null as [number, number, number] | null,
+      envelopeStatus: "UNKNOWN" as const,
+      unitDryWeightKg: 273,
+      weightStatus: "REFERENCE" as const
     },
     260: {
       sku: "PAL-260",
@@ -27,7 +31,10 @@ export const PALISADE_BASIS = {
       scourScfm: 96,
       permeateGuidanceLowGpm: 15,
       permeateGuidanceHighGpm: 25.2,
-      envelopeM: [2.12, 0.96, 3.05] as [number, number, number]
+      envelopeM: [2.12, 0.96, 3.05] as [number, number, number],
+      envelopeStatus: "CONFIRMED" as const,
+      unitDryWeightKg: 546,
+      weightStatus: "REFERENCE" as const
     }
   },
   specificScourScfmPerM2: 0.35,
@@ -139,12 +146,17 @@ export function sizePalisade(input: PalisadeInput) {
         ? installed / requiredAreaM2 - 1
         : null;
     const scourScfm = count != null ? count * spec.scourScfm : null;
+    const hardware = palisadeHardware(spec.sku, count ?? 0);
     return {
       plates,
       sku: spec.sku,
       areaPerModuleM2: spec.areaM2,
       scourPerModuleScfm: spec.scourScfm,
       envelopeM: spec.envelopeM,
+      envelopeStatus: spec.envelopeStatus,
+      unitDryWeightKg: spec.unitDryWeightKg,
+      weightStatus: spec.weightStatus,
+      hardware,
       rawCount: raw,
       moduleCount: count,
       installedAreaM2: installed,
@@ -282,6 +294,9 @@ export function sizePalisade(input: PalisadeInput) {
     { id: "sku", label: "Selected SKU", value: selected?.sku ?? null, status: "ENGINEER INPUT" },
     { id: "modules", label: "Module count", value: selected?.moduleCount ?? null, unit: "modules", status: "CALCULATED" },
     { id: "installed", label: "Installed membrane area", value: selected?.installedAreaM2 ?? null, unit: "m²", status: "CALCULATED" },
+    { id: "unit_dims", label: "Unit L×W×H", value: selected?.hardware.unitDims ?? null, status: selected?.hardware.dimsStatus ?? "UNKNOWN" },
+    { id: "unit_dry_kg", label: "Unit dry weight", value: selected?.hardware.unitDryWeightKg ?? null, unit: "kg", status: selected?.hardware.weightStatus ?? "UNKNOWN", note: "Catalog reference — not Palisade fab weight." },
+    { id: "total_dry_kg", label: "Total installed dry weight", value: selected?.hardware.totalDryWeightKg ?? null, unit: "kg", status: selected?.hardware.weightStatus ?? "UNKNOWN", note: "Unit dry weight × quantity." },
     { id: "scour", label: "Total scour air", value: totalScourScfm, unit: "SCFM", status: "CALCULATED" },
     { id: "scour_si", label: "Total scour air", value: totalScourSm3h, unit: "standard m³/h", status: "CALCULATED" }
   ];
@@ -384,7 +399,8 @@ export function sizePalisade(input: PalisadeInput) {
       fluxLmh: onFlux,
       cycleAverageFluxLmh: cycleAvgFlux,
       capacityM3d: qpM3d,
-      footprint
+      footprint,
+      hardware: selected?.hardware ?? null
     },
     notes,
     assumptions,

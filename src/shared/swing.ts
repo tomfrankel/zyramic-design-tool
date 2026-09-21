@@ -1,3 +1,4 @@
+import { swingHardware, type HardwarePack } from "./hardware.js";
 import {
   SWING_INDUSTRY_FLUX_M3_M2_D,
   SWING_MODULE_PITCH_MM,
@@ -369,7 +370,8 @@ export function sizeSwing(input: SwingInput) {
                 ? `${ALPER_2WIDE_PACK.note}. ${selected.rows} row(s) × 2. Min tank L ${selected.minTankLengthMm} mm. Project CAD still governs.`
                 : "Linear qty × 1100 mm pitch. Plant layout remains project CAD."
           }
-        : null
+        : null,
+      hardware: selected ? serializeMatch(selected).hardware : null
     },
     assumptions,
     warnings,
@@ -378,7 +380,23 @@ export function sizeSwing(input: SwingInput) {
   };
 }
 
+function matchPack(match: SwingMatch): HardwarePack {
+  return {
+    mode: match.pack,
+    rows: match.rows,
+    modulesPerRow: match.modulesPerRow,
+    packWidthMm: match.packWidthMm,
+    minTankLengthMm: match.minTankLengthMm,
+    topClearanceMm: match.topClearanceMm,
+    note:
+      match.pack === "alper_2wide"
+        ? `${ALPER_2WIDE_PACK.note}. ${match.rows} row(s) x 2. Min tank L ${match.minTankLengthMm} mm. Project CAD still governs.`
+        : "Linear qty x 1100 mm pitch. Plant layout remains project CAD."
+  };
+}
+
 function serializeMatch(match: SwingMatch) {
+  const hardware = swingHardware(match.spec, match.quantity, matchPack(match));
   return {
     sku: match.spec.sku,
     engSku: engSku(match.spec),
@@ -406,7 +424,11 @@ function serializeMatch(match: SwingMatch) {
     rows: match.rows,
     modulesPerRow: match.modulesPerRow,
     packWidthMm: match.packWidthMm,
-    minTankLengthMm: match.minTankLengthMm
+    minTankLengthMm: match.minTankLengthMm,
+    uncratedDryWeightKg: match.spec.uncratedDryWeightKg ?? hardware.unitDryWeightKg,
+    weightStatus: match.spec.weightStatus ?? hardware.weightStatus,
+    dimsStatus: match.spec.dimsStatus ?? hardware.dimsStatus,
+    hardware
   };
 }
 

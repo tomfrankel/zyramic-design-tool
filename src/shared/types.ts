@@ -4,6 +4,8 @@ export type ProductFamily = "palisade" | "swing";
 
 export type StatusTag =
   | "CONFIRMED"
+  | "ESTIMATED"
+  | "REFERENCE"
   | "CALCULATED"
   | "ENGINEER INPUT"
   | "ENGINEERING ASSUMPTION"

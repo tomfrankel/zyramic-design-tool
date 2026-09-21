@@ -1,3 +1,4 @@
+import { buildHardwareTable } from "./hardware.js";
 import { palisadeCapacityTable, type PalisadeResult } from "./palisade.js";
 import { swingCapacityTable, type SwingResult } from "./swing.js";
 import { palisadeLineItems, swingLineItems, unknownCommercialTerms, type CommercialFlags } from "./lineItems.js";
@@ -13,8 +14,32 @@ function withoutBlockedPublicNames<T extends { topic?: string; value?: string; m
 ): T[] {
   return items.filter((item) => {
     const blob = `${item.topic || ""} ${item.value || ""} ${item.message || ""} ${item.action || ""}`;
-    return !/EPS8|EPSMEM|OmniScour|On-Board Scour|Thermo Fisher|Liren|Henry|aeration|diffuser|bubble/i.test(blob);
+    return !/EPS8|EPSMEM|OmniScour|On-Board Scour|Thermo Fisher|Liren|Henry|Qianli|Jiaxing|aeration|diffuser|bubble/i.test(blob);
   });
+}
+
+function hardwareSummary(hw: PalisadeResult["sales"]["hardware"] | SwingResult["sales"]["hardware"]) {
+  if (!hw) {
+    return [
+      { label: "Unit LxWxH", value: "—" },
+      { label: "Unit dry weight", value: "—" },
+      { label: "Total installed dry weight", value: "—" }
+    ];
+  }
+  return [
+    { label: "Unit LxWxH", value: `${hw.unitDims} [${hw.dimsStatus}]` },
+    {
+      label: "Unit dry weight",
+      value: hw.unitDryWeightKg != null ? `${hw.unitDryWeightKg} kg [${hw.weightStatus}]` : `UNKNOWN [${hw.weightStatus}]`
+    },
+    {
+      label: "Total installed dry weight",
+      value:
+        hw.totalDryWeightKg != null
+          ? `${hw.totalDryWeightKg} kg [${hw.weightStatus}]`
+          : `UNKNOWN [${hw.weightStatus}]`
+    }
+  ];
 }
 
 export function palisadeCapacityRows(input: PalisadeInput): CapacityRow[] {
@@ -82,8 +107,10 @@ export function palisadeProposal(
       { label: "Tank height", value: result.sizing.tankHeightM != null ? `${result.sizing.tankHeightM} m` : "—" },
       { label: "Capacity", value: result.sales.capacityM3d != null ? `${result.sales.capacityM3d} m³/d` : "—" },
       { label: "Total scour", value: result.scour.totalScourScfm != null ? `${result.scour.totalScourScfm} SCFM` : "—" },
+      ...hardwareSummary(result.sales.hardware),
       { label: "Footprint", value: result.footprint.note }
     ],
+    hardwareTable: result.sales.hardware ? buildHardwareTable([result.sales.hardware], opts.role) : undefined,
     capacityTable: input.trains?.length ? palisadeCapacityRows(input) : undefined,
     assumptions: isCustomerRole(opts.role) ? withoutBlockedPublicNames(result.assumptions) : result.assumptions,
     warnings: (isCustomerRole(opts.role) ? withoutBlockedPublicNames(result.warnings) : result.warnings).map((w) => w.message),
@@ -137,8 +164,10 @@ export function swingProposal(
       { label: "Flux", value: result.sales.fluxLmh != null ? `${result.sales.fluxLmh.toFixed(2)} LMH` : "—" },
       { label: "Pack", value: result.packMode },
       { label: "Capacity", value: `${result.sales.capacityM3d} m³/d` },
+      ...hardwareSummary(result.sales.hardware),
       { label: "Footprint", value: result.sales.footprint?.note || "—" }
     ],
+    hardwareTable: result.sales.hardware ? buildHardwareTable([result.sales.hardware], opts.role) : undefined,
     capacityTable: input.trains?.length
       ? swingCapacityRows(input).map((r) =>
           isCustomerRole(opts.role) ? { ...r, engSku: undefined } : r

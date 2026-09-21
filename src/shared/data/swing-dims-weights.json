@@ -1,0 +1,237 @@
+{
+  "cartridgeDryKg": {
+    "8": 11.3,
+    "9": 17.4
+  },
+  "publicSource": "OEM uncrated dry module weight. Cartridge dry mass is a separate takeoff.",
+  "engSource": "OEM Swing MBR module weight sheet (2026-09-20). Cartridge dry: series 8 = 11.3 kg, series 9 = 17.4 kg.",
+  "modules": {
+    "SWG-8-0.5-1": {
+      "uncratedDryWeightKg": 33,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-1-1": {
+      "uncratedDryWeightKg": 46,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-1-2": {
+      "uncratedDryWeightKg": 67.8,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-1-3": {
+      "uncratedDryWeightKg": 84.75,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-1-4": {
+      "uncratedDryWeightKg": 103.96,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-1-5": {
+      "uncratedDryWeightKg": 129.95,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-1-6": {
+      "uncratedDryWeightKg": 155.94,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-1.5-1": {
+      "uncratedDryWeightKg": 52.55,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-1.5-2": {
+      "uncratedDryWeightKg": 84.75,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-1.5-3": {
+      "uncratedDryWeightKg": 116.95,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-1.5-4": {
+      "uncratedDryWeightKg": 135.6,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-1.5-5": {
+      "uncratedDryWeightKg": 169.5,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-1.5-6": {
+      "uncratedDryWeightKg": 187.13,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-1.5-7": {
+      "uncratedDryWeightKg": 218.32,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-1.5-8": {
+      "uncratedDryWeightKg": 249.5,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-2-1": {
+      "uncratedDryWeightKg": 54.24,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-2-2": {
+      "uncratedDryWeightKg": 99.44,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-2-3": {
+      "uncratedDryWeightKg": 135.6,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-2-4": {
+      "uncratedDryWeightKg": 171.76,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-2-5": {
+      "uncratedDryWeightKg": 198.88,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-2-6": {
+      "uncratedDryWeightKg": 238.66,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-2-7": {
+      "uncratedDryWeightKg": 268.94,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-2-8": {
+      "uncratedDryWeightKg": 307.36,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-2-9": {
+      "uncratedDryWeightKg": 329.51,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-2-10": {
+      "uncratedDryWeightKg": 366.12,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-2.5-4": {
+      "uncratedDryWeightKg": 198.88,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-2.5-5": {
+      "uncratedDryWeightKg": 240.12,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-2.5-6": {
+      "uncratedDryWeightKg": 288.15,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-2.5-7": {
+      "uncratedDryWeightKg": 326.29,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-2.5-8": {
+      "uncratedDryWeightKg": 372.9,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-2.5-9": {
+      "uncratedDryWeightKg": 406.8,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-2.5-10": {
+      "uncratedDryWeightKg": 452,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-3-4": {
+      "uncratedDryWeightKg": 230.52,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-3-5": {
+      "uncratedDryWeightKg": 288.15,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-3-6": {
+      "uncratedDryWeightKg": 335.61,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-3-7": {
+      "uncratedDryWeightKg": 391.55,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-3-8": {
+      "uncratedDryWeightKg": 442.06,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-3-9": {
+      "uncratedDryWeightKg": 488.16,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-3-10": {
+      "uncratedDryWeightKg": 542.4,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-4-6": {
+      "uncratedDryWeightKg": 433.92,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-4-7": {
+      "uncratedDryWeightKg": 506.24,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-4-8": {
+      "uncratedDryWeightKg": 524.32,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-4-9": {
+      "uncratedDryWeightKg": 589.86,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-4-10": {
+      "uncratedDryWeightKg": 655.4,
+      "weightStatus": "CONFIRMED",
+      "dimsStatus": "CONFIRMED"
+    },
+    "SWG-8-2.5-12": {
+      "uncratedDryWeightKg": 542.4,
+      "weightStatus": "ESTIMATED",
+      "dimsStatus": "ESTIMATED",
+      "weightNoteEng": "OEM module weight sheet 2026-09-20. Not on OEM sheet; dry weight scaled from EPS8-2.5-10 by area (=EPS8-3-10 same area). Confirm with OEM before customer quote.",
+      "dimsNoteEng": "L=3300 mm extrapolated +250 mm/col from 2.5-10; confirm with OEM."
+    }
+  }
+}

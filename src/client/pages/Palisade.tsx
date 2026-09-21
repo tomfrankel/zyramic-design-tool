@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { screenPalisadeCip } from "../../shared/cip";
 import { ARGES_TRAINS, palisadeCapacityTable, sizePalisade } from "../../shared/palisade";
 import { palisadeProposal } from "../../shared/proposal";
-import { canSeePricing } from "../../shared/roles";
+import { canSeeEngineeringDetail, canSeePricing } from "../../shared/roles";
 import type { PalisadeInput } from "../../shared/types";
 import { cipApi, downloadPdf, getRole, loadCutsheet, loadLogo, persistQuote, priceApi, sizePalisadeApi } from "../lib/api";
 
@@ -67,6 +67,7 @@ export function PalisadePage() {
   const [marginError, setMarginError] = useState("");
   const role = getRole();
   const pricing = !!(role && canSeePricing(role));
+  const eng = !!(role && canSeeEngineeringDetail(role));
 
   const patch = (partial: Partial<PalisadeInput>) => setInput((prev) => ({ ...prev, ...partial }));
 
@@ -119,6 +120,28 @@ export function PalisadePage() {
           <div><span className="muted">Cycle-average flux</span><strong>{fmt(result.sizing.cycleAverageFluxLmh, "LMH")}</strong></div>
           <div><span className="muted">Selected</span><strong>{result.selectedModule?.sku ?? "—"} × {result.selectedModule?.moduleCount ?? "—"}</strong></div>
           <div><span className="muted">TCF check only</span><strong>{fmt(result.sizing.temperatureCorrectionFactor)}</strong></div>
+        </div>
+        <div className="kpi">
+          <div>
+            <span className="muted">Unit L×W×H</span>
+            <strong>{result.sales.hardware?.unitDims ?? "—"}</strong>
+            {result.sales.hardware ? <Flag status={result.sales.hardware.dimsStatus} /> : null}
+          </div>
+          <div>
+            <span className="muted">Unit dry weight</span>
+            <strong>{result.sales.hardware?.unitDryWeightKg != null ? `${result.sales.hardware.unitDryWeightKg} kg` : "UNKNOWN"}</strong>
+            {result.sales.hardware ? <Flag status={result.sales.hardware.weightStatus} /> : null}
+          </div>
+          <div>
+            <span className="muted">Total installed dry</span>
+            <strong>{result.sales.hardware?.totalDryWeightKg != null ? `${result.sales.hardware.totalDryWeightKg} kg` : "UNKNOWN"}</strong>
+            <div className="muted">unit × qty</div>
+          </div>
+          <div>
+            <span className="muted">Weight basis</span>
+            <strong>Catalog reference</strong>
+            <div className="muted">{eng ? (result.sales.hardware?.engNote ?? "") : (result.sales.hardware?.publicNote ?? "")}</div>
+          </div>
         </div>
         {result.sizing.pal260Blocked ? (
           <div className="banner">PAL-260 blocked: tank height {result.sizing.tankHeightM} m is below the 3.05 m envelope. Using PAL-130.</div>
@@ -185,7 +208,7 @@ export function PalisadePage() {
             <p className="muted">Minimum whole modules to meet Area@12. No +10% margin and no N+1. Do not infer a 130 envelope by halving the 260 envelope.</p>
             <table>
               <thead>
-                <tr><th>SKU</th><th>Plates</th><th>m²/mod</th><th>Count</th><th>Installed m²</th><th>Rounding</th><th>Scour SCFM</th><th>Envelope</th></tr>
+                <tr><th>SKU</th><th>Plates</th><th>m²/mod</th><th>Count</th><th>Installed m²</th><th>Rounding</th><th>Scour SCFM</th><th>Unit L×W×H</th><th>Unit kg</th><th>Total kg</th></tr>
               </thead>
               <tbody>
                 {result.moduleOptions.map((o) => (
@@ -197,7 +220,9 @@ export function PalisadePage() {
                     <td>{o.installedAreaM2 ?? "—"}</td>
                     <td>{o.roundingDifferenceM2 != null ? o.roundingDifferenceM2.toFixed(2) : "—"}</td>
                     <td>{o.totalScourScfm ?? "—"}</td>
-                    <td>{o.envelopeM ? o.envelopeM.join(" × ") + " m" : "project CAD"}</td>
+                    <td>{o.hardware.unitDims} <Flag status={o.hardware.dimsStatus} /></td>
+                    <td>{o.hardware.unitDryWeightKg ?? "UNKNOWN"} <Flag status={o.hardware.weightStatus} /></td>
+                    <td>{o.hardware.totalDryWeightKg ?? "UNKNOWN"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -268,6 +293,9 @@ export function PalisadePage() {
                 <Row k="SKU" v={String(result.sales.sku ?? "—")} />
                 <Row k="Modules" v={String(result.sales.moduleCount ?? "—")} />
                 <Row k="Installed area" v={result.sales.areaM2 != null ? `${result.sales.areaM2.toFixed(1)} m²` : "—"} />
+                <Row k="Unit L×W×H" v={`${result.sales.hardware?.unitDims ?? "—"} [${result.sales.hardware?.dimsStatus ?? "UNKNOWN"}]`} />
+                <Row k="Unit dry weight" v={result.sales.hardware?.unitDryWeightKg != null ? `${result.sales.hardware.unitDryWeightKg} kg [${result.sales.hardware.weightStatus}]` : "UNKNOWN"} n={eng ? result.sales.hardware?.engNote : result.sales.hardware?.publicNote} />
+                <Row k="Total installed dry weight" v={result.sales.hardware?.totalDryWeightKg != null ? `${result.sales.hardware.totalDryWeightKg} kg` : "UNKNOWN"} n="Unit dry weight × quantity. Customer may see dims and weights; pricing stays hidden." />
                 <Row k="Warranty COD" v={result.operating.warranty.codStatus} />
                 <Row k="MLSS guidance" v={result.operating.mlssStatus} />
                 <Row k="CIP" v={result.cipStatus} />
@@ -364,4 +392,8 @@ function fmt(v: number | null | undefined, unit = "") {
 function money(v: number | null | undefined) {
   if (v == null) return "—";
   return `$${v.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
+}
+function Flag({ status }: { status: string }) {
+  const cls = status === "ESTIMATED" ? "est" : status === "REFERENCE" ? "ref" : status === "UNKNOWN" ? "warn" : "ok";
+  return <span className={`tag ${cls}`}>{status}</span>;
 }

@@ -1,5 +1,7 @@
 # CHANGELOG — Alper acceptance baseline (Sep 20, 2026)
 
+Dims + uncrated dry weights on sizing UI, API JSON, and PDF technical takeoff (Swing OEM sheet; Palisade catalog reference — not fab weight). ESTIMATED / REFERENCE / UNKNOWN flags; customer sees facts without supplier names or $.
+
 Brand kit (Sep 21): official logos + Source Serif 4 / Archivo chrome; public copy locked to Palisade / Swing MBR / Scrub UF / Ceramic modules.
 
 Short Basecamp note: what changed versus the gaps in COMPARISON-Tom.md.

@@ -45,8 +45,33 @@ describe("5-page branded proposal PDF", () => {
     expect(input.includePricing).toBe(false);
     expect(input.lineItems).toBeUndefined();
     const publicBlob = JSON.stringify(input);
-    expect(publicBlob).not.toMatch(/EPS8|EPSMEM|OmniScour|On-Board Scour|Thermo Fisher|Liren|Henry|aeration|diffuser|bubble/i);
+    expect(publicBlob).not.toMatch(/EPS8|EPSMEM|OmniScour|On-Board Scour|Thermo Fisher|Liren|Henry|Qianli|Jiaxing|aeration|diffuser|bubble/i);
     expect(input.summaryRows.some((r) => r.label === "Engineering SKU")).toBe(false);
+    expect(input.hardwareTable?.rows[0]?.sku).toBe("SWG-8-2.5-12");
+    expect(input.hardwareTable?.rows[0]?.unitWeightKg).toMatch(/542\.4/);
+    expect(input.hardwareTable?.rows[0]?.totalWeightKg).toMatch(/1084\.8/);
+    expect(input.hardwareTable?.rows[0]?.weightFlag).toBe("ESTIMATED");
+    expect(input.hardwareTable?.footnote).toMatch(/OEM uncrated dry/i);
+    expect(input.hardwareTable?.footnote).not.toMatch(/Henry|Liren|Qianli/i);
+    const bytes = await buildProposalPdf(input);
+    const doc = await PDFDocument.load(bytes);
+    expect(doc.getPageCount()).toBe(5);
+  });
+
+  it("puts Palisade reference weights on the engineering technical takeoff", async () => {
+    const result = sizePalisade({
+      projectName: "Arges / Ahmet Iraq MBR",
+      targetPermeateM3d: 200,
+      minTemperatureC: 15,
+      tankHeightM: 3
+    });
+    const input = palisadeProposal(result, { role: "engineering", includePricing: false });
+    expect(input.hardwareTable?.rows[0]?.sku).toBe("PAL-130");
+    expect(input.hardwareTable?.rows[0]?.unitWeightKg).toMatch(/273/);
+    expect(input.hardwareTable?.rows[0]?.totalWeightKg).toMatch(/1638/);
+    expect(input.hardwareTable?.rows[0]?.weightFlag).toBe("REFERENCE");
+    expect(input.hardwareTable?.rows[0]?.unitDims).toMatch(/UNKNOWN/);
+    expect(input.hardwareTable?.footnote).toMatch(/ZY-MBR150-S|catalog equivalent|Not weighed Palisade/i);
     const bytes = await buildProposalPdf(input);
     const doc = await PDFDocument.load(bytes);
     expect(doc.getPageCount()).toBe(5);

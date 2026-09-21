@@ -61,6 +61,26 @@ describe("Alper Palisade acceptance", () => {
     expect(result.operating.warranty.warrantyOutside).toBe(true);
     expect(result.operating.warranty.nh4Status).toMatch(/WITHIN/);
   });
+
+  it("exposes PAL-130/260 dims and catalog-reference weights", () => {
+    const result = sizePalisade({ ...iraq, targetPermeateM3d: 200 });
+    const pal130 = result.moduleOptions.find((o) => o.sku === "PAL-130");
+    const pal260 = result.moduleOptions.find((o) => o.sku === "PAL-260");
+    expect(result.selectedModule?.sku).toBe("PAL-130");
+    expect(result.selectedModule?.moduleCount).toBe(6);
+    expect(pal130?.hardware.unitDims).toBe("UNKNOWN");
+    expect(pal130?.hardware.dimsStatus).toBe("UNKNOWN");
+    expect(pal130?.hardware.unitDryWeightKg).toBe(273);
+    expect(pal130?.hardware.totalDryWeightKg).toBe(1638);
+    expect(pal130?.hardware.weightStatus).toBe("REFERENCE");
+    expect(pal130?.envelopeM).toBeNull();
+    expect(pal260?.hardware.unitDims).toBe("2.12 x 0.96 x 3.05 m");
+    expect(pal260?.hardware.dimsStatus).toBe("CONFIRMED");
+    expect(pal260?.hardware.unitDryWeightKg).toBe(546);
+    expect(pal260?.hardware.weightStatus).toBe("REFERENCE");
+    expect(result.sales.hardware?.publicNote).toMatch(/Catalog reference/i);
+    expect(result.sales.hardware?.publicNote).not.toMatch(/Qianli|Liren|Henry/i);
+  });
 });
 
 describe("Alper Swing acceptance", () => {
@@ -81,6 +101,13 @@ describe("Alper Swing acceptance", () => {
     expect(result.selected?.installedAreaM2).toBe(750);
     expect(result.selected?.pack).toBe("alper_2wide");
     expect(result.selected?.modulesPerRow).toBe(2);
+    expect(result.selected?.hardware.unitDims).toBe("3300 x 700 x 2160 mm");
+    expect(result.selected?.hardware.dimsStatus).toBe("ESTIMATED");
+    expect(result.selected?.hardware.unitDryWeightKg).toBeCloseTo(542.4, 5);
+    expect(result.selected?.hardware.totalDryWeightKg).toBeCloseTo(1084.8, 5);
+    expect(result.selected?.hardware.weightStatus).toBe("ESTIMATED");
+    expect(result.selected?.hardware.pack?.packWidthMm).toBe(2400);
+    expect(result.selected?.hardware.pack?.minTankLengthMm).toBe(3300);
   });
 
   it("selects 6 × EPS8-2.5-10 at 500 m³/d side-by-side", () => {
@@ -90,6 +117,10 @@ describe("Alper Swing acceptance", () => {
     expect(result.selected?.quantity).toBe(6);
     expect(result.selected?.installedAreaM2).toBe(1875);
     expect(result.selected?.rows).toBe(3);
+    expect(result.selected?.hardware.unitDryWeightKg).toBe(452);
+    expect(result.selected?.hardware.totalDryWeightKg).toBe(2712);
+    expect(result.selected?.hardware.weightStatus).toBe("CONFIRMED");
+    expect(result.selected?.hardware.dimsStatus).toBe("CONFIRMED");
   });
 
   it("keeps industry 0.34 map as an alternate mode", () => {

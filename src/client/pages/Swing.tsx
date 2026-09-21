@@ -159,6 +159,38 @@ export function SwingPage() {
           <div><span className="muted">Selected</span><strong>{result.selected ? `${eng ? result.selected.engSku : result.selected.sku} × ${result.selected.quantity}` : "no match"}</strong></div>
           <div><span className="muted">Installed</span><strong>{result.selected?.installedAreaM2?.toFixed(1) ?? "—"} m²</strong></div>
         </div>
+        <div className="kpi">
+          <div>
+            <span className="muted">Unit L×W×H</span>
+            <strong>{result.selected?.hardware.unitDims ?? "—"}</strong>
+            {result.selected ? <Flag status={result.selected.hardware.dimsStatus} /> : null}
+          </div>
+          <div>
+            <span className="muted">Unit dry weight</span>
+            <strong>{result.selected?.hardware.unitDryWeightKg != null ? `${result.selected.hardware.unitDryWeightKg} kg` : "UNKNOWN"}</strong>
+            {result.selected ? <Flag status={result.selected.hardware.weightStatus} /> : null}
+          </div>
+          <div>
+            <span className="muted">Total installed dry</span>
+            <strong>{result.selected?.hardware.totalDryWeightKg != null ? `${result.selected.hardware.totalDryWeightKg} kg` : "UNKNOWN"}</strong>
+            <div className="muted">unit × qty</div>
+          </div>
+          <div>
+            <span className="muted">Pack / layout</span>
+            <strong>
+              {result.selected?.hardware.pack
+                ? `${result.selected.hardware.pack.packWidthMm} × ${result.selected.hardware.pack.minTankLengthMm} mm`
+                : "—"}
+            </strong>
+            <div className="muted">{result.selected?.hardware.pack?.note || result.selected?.hardware.publicNote}</div>
+          </div>
+        </div>
+        {result.selected?.hardware.weightStatus === "ESTIMATED" || result.selected?.hardware.dimsStatus === "ESTIMATED" ? (
+          <p className="banner">
+            ESTIMATED hardware: {result.selected.sku} dry weight and length are scaled / extrapolated, not from the OEM sheet row.
+            {eng ? ` ${result.selected.hardware.engNote}` : ` ${result.selected.hardware.publicNote}`}
+          </p>
+        ) : null}
         {result.matches.length === 0 ? <p className="banner">No matching data. Increase tank length, width, or height.</p> : null}
         <h3>Matches</h3>
         <table>
@@ -170,6 +202,8 @@ export function SwingPage() {
               <th>Decks × cols</th>
               <th>m²</th>
               <th>L×W×H</th>
+              <th>Unit kg</th>
+              <th>Total kg</th>
               <th>Qty</th>
               <th>Pack</th>
               <th>Installed</th>
@@ -185,7 +219,9 @@ export function SwingPage() {
                 {eng ? <td>{m.engSku}</td> : null}
                 <td>{m.decks} × {m.columns}</td>
                 <td>{m.areaPerModuleM2}</td>
-                <td>{m.dimensionsMm.length}×{m.dimensionsMm.width}×{m.dimensionsMm.height}</td>
+                <td>{m.dimensionsMm.length}×{m.dimensionsMm.width}×{m.dimensionsMm.height} <Flag status={m.hardware.dimsStatus} /></td>
+                <td>{m.hardware.unitDryWeightKg ?? "UNKNOWN"} <Flag status={m.hardware.weightStatus} /></td>
+                <td>{m.hardware.totalDryWeightKg ?? "UNKNOWN"}</td>
                 <td>{m.quantity}</td>
                 <td>{m.pack === "alper_2wide" ? `${m.rows}×2-wide` : "linear"}</td>
                 <td>{m.installedAreaM2.toFixed(1)}</td>
@@ -270,4 +306,9 @@ export function SwingPage() {
       </div>
     </>
   );
+}
+
+function Flag({ status }: { status: string }) {
+  const cls = status === "ESTIMATED" ? "est" : status === "REFERENCE" ? "ref" : status === "UNKNOWN" ? "warn" : "ok";
+  return <span className={`tag ${cls}`}>{status}</span>;
 }
